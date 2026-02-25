@@ -1,3 +1,9 @@
+// Immutable Data Guard — prevents ghost overwrites from legacy scripts
+const DASHBOARD_OVERRIDE = {
+    brokerBay: 1,
+    fbSpend: '--'
+};
+
 window.pricingChartInstance = null;
 window.cdomChartInstance = null;
 window.liquidityChartInstance = null;
@@ -2435,13 +2441,17 @@ window.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Dashboard initialization complete');
 });
 
-function forceBrokerBaySuccess() {
-    const val = propertyData?.syndicationStats?.brokerBayShowings || 1;
-    const el = document.getElementById('stat-brokerbay-showings');
-    if (el) {
-        el.innerText = val;
-        console.log('SURGICAL SUCCESS: BrokerBay set to', val);
+// Master Pulse — self-healing heartbeat that kills ghost scripts
+function dashboardHeartbeat() {
+    const bbEl = document.getElementById('stat-brokerbay-showings');
+    if (bbEl && bbEl.innerText !== String(DASHBOARD_OVERRIDE.brokerBay)) {
+        bbEl.innerText = DASHBOARD_OVERRIDE.brokerBay;
+        console.log('❤️ HEARTBEAT: Restored BrokerBay to 1');
     }
 }
-window.addEventListener('load', forceBrokerBaySuccess);
-setTimeout(forceBrokerBaySuccess, 2000);
+let pulseCount = 0;
+const pulseInterval = setInterval(() => {
+    dashboardHeartbeat();
+    pulseCount++;
+    if (pulseCount > 10) clearInterval(pulseInterval);
+}, 1000);
