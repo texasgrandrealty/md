@@ -65,7 +65,13 @@ const propertyData = {
     matterportEmbedUrl: 'https://my.matterport.com/show/?m=cTSxrKFZQvR&play=1&mls=2',
     
     // BrokerBay Feedback Intelligence Log
-    feedbackLog: [],
+    feedbackLog: [
+    {
+        "date": "02/24/2026",
+        "interest": "Unknown",
+        "comments": "- Thomas Andrew Miller <info@mg2.brokerbay.com>Date: Mon, Feb 23, 2026 at 10:05 AMSubject: Feedback Submitted - 109 Kelli DRTo: <tmiller@texasgrandrealty.com>"
+    }
+],
     
     // Syndication Stats for Funnel Performance Scoreboard
     // AUTOMATED FIELDS (sync_stats.py fills these from ListTrac API):
@@ -94,12 +100,12 @@ const propertyData = {
         matterportWalkthroughs: 0,
         
         // Bottom Funnel: Conversion (MANUAL entry)
-        brokerBayShowings: 0,
+        brokerBayShowings: 1,
         mlsReverseProspectMatches: 0,
 
         // Metadata for the Command Center
         mlsNumber: '21178024',
-        lastSync: 'February 24, 2026'
+        lastSync: 'February 25, 2026'
     },
     cdom: 0,
     downPaymentPct: 0.20,
