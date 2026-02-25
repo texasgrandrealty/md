@@ -2059,10 +2059,12 @@ function showCarouselImage() {
 }
 
 // Keyboard navigation for carousel
-document.addEventListener('keydown', function(e) {
-    const lightbox = document.getElementById('imageLightbox');
-    if (!lightbox.classList.contains('hidden')) {
-        switch(e.key) {
+function setupCarouselKeyboardNavigation() {
+    document.addEventListener('keydown', function(e) {
+        const lightbox = document.getElementById('imageLightbox');
+        if (!lightbox || lightbox.classList.contains('hidden')) return;
+
+        switch (e.key) {
             case 'Escape':
                 closeLightbox();
                 break;
@@ -2073,8 +2075,8 @@ document.addEventListener('keydown', function(e) {
                 nextImage();
                 break;
         }
-    }
-});
+    });
+}
 
 // Syndication modal functions
 function openSyndicationModal() {
@@ -2162,35 +2164,6 @@ function handleLeadSubmission(e) {
 }
 
 // --- INITIALIZATION ---
-
-window.onload = function() {
-    try {
-        console.log('🚀 Initializing 2026 Executive Dashboard...');
-        
-        // HYBRID UNIT DETECTION: Detect property type (SqFt vs Acres) first
-        detectPropertyUnit();
-        populateReportingLinks();
-        calculateOption3Totals();
-        attachEventListeners();
-        populateAllCompTables();
-        populateOptions();
-        populateAmortizationTable();
-        populateCompleteAmortizationTable(); 
-        setTimeout(initCharts, 100);
-        showCompSubTab('neighborhood'); 
-        showTab('summary');
-        
-        console.log('✅ Dashboard initialization complete');
-        console.log(`📸 Image Gallery Arrays Loaded:
-        - Drone Images: ${droneIds.length} photos
-        - HDR Images: ${hdrIds.length} photos  
-        - Virtual Staging: ${virtualIds.length} photos
-        - 3D Models: ${dollhouseIds.length} photos`);
-        
-    } catch (error) {
-        console.error('❌ Error during initialization:', error);
-    }
-};
 // --- PRESENTATION-READY REPORTING BRIDGE ---
 function updateReportingLinks() {
     const links = propertyData.reportingLinks;
@@ -2268,8 +2241,6 @@ function syncPitchReports() {
         }
     }
 }
-// Run it when the page loads
-window.addEventListener('DOMContentLoaded', syncPitchReports);
 function initializeListingPortal() {
     const portal = document.getElementById('live-client-portal');
     if (propertyData.isListingActive && portal) {
@@ -2277,7 +2248,6 @@ function initializeListingPortal() {
         console.log("Listing Module: ONLINE");
     }
 }
-window.addEventListener('load', initializeListingPortal);
 
 // --- FUNNEL PERFORMANCE SCOREBOARD ---
 // Calculates conversion health by comparing Showings vs Saves

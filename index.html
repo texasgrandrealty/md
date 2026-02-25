@@ -1,4 +1,4 @@
-﻿<!--
+<!--
   2026 EXECUTIVE DASHBOARD - MASTER TEMPLATE (Protocol 000.002.001)
   
   SINGLE SOURCE OF TRUTH: propertyData object powers all 14 tabs dynamically.
@@ -2825,30 +2825,70 @@
 
     <script>
     window.addEventListener('DOMContentLoaded', function() {
-        const showingsEl = document.getElementById('stat-brokerbay-showings');
-        if (showingsEl) {
-            showingsEl.textContent = "1";
-        }
+        try {
+            console.log('🚀 Initializing 2026 Executive Dashboard...');
 
-        const feedbackBody = document.getElementById('brokerbay-feedback-body');
-        if (feedbackBody) {
-            feedbackBody.innerHTML = '';
-            propertyData.feedbackLog.forEach(function(entry) {
-                feedbackBody.insertAdjacentHTML('beforeend', `
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-8 py-5 text-sm font-bold text-slate-900 whitespace-nowrap">${entry.date}</td>
-                        <td class="px-8 py-5">
-                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter bg-slate-100 text-slate-600">${entry.interest}</span>
-                        </td>
-                        <td class="px-8 py-5 text-sm text-slate-600 leading-relaxed">${entry.comments}</td>
-                    </tr>
-                `);
-            });
-        }
+            // Unified initialization order (Protocol 000.002.001)
+            detectPropertyUnit();
+            injectDynamicData();
+            populatePropertyData();
 
-        const feedbackCountPill = document.getElementById('feedback-count-pill');
-        if (feedbackCountPill) {
-            feedbackCountPill.textContent = "1 Total Entry";
+            // CRITICAL hard-set values after data injection
+            const showingsEl = document.getElementById('stat-brokerbay-showings');
+            if (showingsEl) {
+                showingsEl.textContent = '1';
+            }
+
+            const feb242026Feedback = Array.isArray(propertyData.feedbackLog)
+                ? propertyData.feedbackLog.find(function(entry) {
+                    return entry && entry.date === '02/24/2026';
+                })
+                : null;
+
+            const feedbackBody = document.getElementById('brokerbay-feedback-body');
+            if (feedbackBody) {
+                feedbackBody.innerHTML = '';
+                if (feb242026Feedback) {
+                    feedbackBody.insertAdjacentHTML('beforeend', `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-8 py-5 text-sm font-bold text-slate-900 whitespace-nowrap">${feb242026Feedback.date}</td>
+                            <td class="px-8 py-5">
+                                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter bg-slate-100 text-slate-600">${feb242026Feedback.interest}</span>
+                            </td>
+                            <td class="px-8 py-5 text-sm text-slate-600 leading-relaxed">${feb242026Feedback.comments}</td>
+                        </tr>
+                    `);
+                }
+            }
+
+            const feedbackCountPill = document.getElementById('feedback-count-pill');
+            if (feedbackCountPill) {
+                feedbackCountPill.textContent = feb242026Feedback ? '1 Total Entry' : '0 Total Entries';
+            }
+
+            // Migrated initialization logic from logic.js window.onload
+            populateReportingLinks();
+            syncPitchReports();
+            initializeListingPortal();
+            calculateOption3Totals();
+            attachEventListeners();
+            setupCarouselKeyboardNavigation();
+            populateAllCompTables();
+            populateOptions();
+            populateAmortizationTable();
+            populateCompleteAmortizationTable();
+            setTimeout(initCharts, 100);
+            showCompSubTab('neighborhood');
+            showTab('summary');
+
+            console.log('✅ Dashboard initialization complete');
+            console.log(`📸 Image Gallery Arrays Loaded:
+            - Drone Images: ${droneIds.length} photos
+            - HDR Images: ${hdrIds.length} photos
+            - Virtual Staging: ${virtualIds.length} photos
+            - 3D Models: ${dollhouseIds.length} photos`);
+        } catch (error) {
+            console.error('❌ Error during initialization:', error);
         }
     });
     </script>
