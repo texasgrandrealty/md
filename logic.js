@@ -2281,3 +2281,125 @@ function initializeListingPortal() {
     }
 }
 window.addEventListener('load', initializeListingPortal);
+
+// --- FUNNEL PERFORMANCE SCOREBOARD ---
+// Calculates conversion health by comparing Showings vs Saves
+// If Showings < 5% of Saves, indicates price friction in the market
+function calculateFunnelHealth() {
+    const stats = propertyData.syndicationStats;
+    if (!stats) {
+        console.warn('syndicationStats not found in propertyData');
+        return null;
+    }
+
+    const showings = stats.brokerBayShowings || 0;
+    const saves = stats.zillowSaves || 0;
+    const FRICTION_THRESHOLD = 0.05;
+    
+    const showingToSaveRatio = saves > 0 ? (showings / saves) : 0;
+    const healthPercentage = Math.min((showingToSaveRatio / FRICTION_THRESHOLD) * 100, 100);
+    const hasFriction = showingToSaveRatio < FRICTION_THRESHOLD;
+    
+    return {
+        showings,
+        saves,
+        ratio: showingToSaveRatio,
+        ratioDisplay: saves > 0 ? (showingToSaveRatio * 100).toFixed(1) + '%' : 'N/A',
+        healthPercentage: healthPercentage.toFixed(1),
+        hasFriction,
+        warningText: hasFriction ? 'PRICE FRICTION DETECTED - MARKET IN WAIT-AND-SEE MODE' : null,
+        statusText: hasFriction 
+            ? 'Engagement high, but showings lagging. Buyers may be price-sensitive.'
+            : 'Healthy conversion velocity. Engagement translating to physical traffic.'
+    };
+}
+
+// Populate Funnel Scoreboard UI with syndicationStats
+function populateFunnelScoreboard() {
+    const stats = propertyData.syndicationStats;
+    if (!stats) return;
+
+    const numFormat = new Intl.NumberFormat('en-US');
+    const currFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 });
+
+    const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    };
+
+    // Awareness section
+    setVal('stat-listhub-reach', numFormat.format(stats.listHubReach));
+    setVal('stat-listtrac-views', numFormat.format(stats.listTracTotalViews));
+    setVal('listTracViews30Days', numFormat.format(stats.listTracViews30Days || 0));
+    setVal('stat-facebook-reach', numFormat.format(stats.facebookReach));
+        // Update the Engagement section
+    setVal('stat-listtrac-inquiries', numFormat.format(stats.listTracInquiries)); // NEW: Points to your new key
+    setVal('stat-facebook-clicks', numFormat.format(stats.facebookClicks));
+    setVal('stat-matterport-walkthroughs', numFormat.format(stats.matterportWalkthroughs));
+    // Update the Conversion section
+    setVal('stat-brokerbay-showings', numFormat.format(stats.brokerBayShowings));
+    setVal('stat-mls-matches', numFormat.format(stats.mlsReverseProspectMatches));
+    setVal('stat-facebook-spend', currFormat.format(stats.facebookSpend));
+    setVal('stat-facebook-clicks', numFormat.format(stats.facebookClicks));
+    setVal('stat-zillow-saves', numFormat.format(stats.zillowSaves));
+    setVal('stat-matterport-walkthroughs', numFormat.format(stats.matterportWalkthroughs));
+    setVal('stat-brokerbay-showings', numFormat.format(stats.brokerBayShowings));
+    setVal('stat-mls-matches', numFormat.format(stats.mlsReverseProspectMatches));
+
+    const health = calculateFunnelHealth();
+    if (health) {
+        setVal('stat-showing-ratio', health.ratioDisplay);
+        setVal('funnel-health-percentage', health.healthPercentage + '%');
+        setVal('funnel-health-status', health.statusText);
+
+        const bar = document.getElementById('funnel-health-bar');
+        if (bar) {
+            bar.style.width = health.healthPercentage + '%';
+            if (health.hasFriction) {
+                bar.classList.remove('from-blue-600', 'to-blue-400');
+                bar.classList.add('from-yellow-500', 'to-orange-500');
+            } else {
+                bar.classList.remove('from-yellow-500', 'to-orange-500');
+                bar.classList.add('from-blue-600', 'to-blue-400');
+            }
+        }
+
+        const warning = document.getElementById('funnel-health-warning');
+        if (warning && health.hasFriction && health.warningText) {
+            warning.textContent = health.warningText;
+            warning.classList.remove('hidden');
+        } else if (warning) {
+            warning.classList.add('hidden');
+        }
+    }
+
+    console.log('Funnel Scoreboard: POPULATED');
+
+    // Populate Top Websites list
+    const websitesList = document.getElementById('list-top-websites');
+    if (websitesList && stats.listTracTopWebsites && stats.listTracTopWebsites.length > 0) {
+        websitesList.innerHTML = stats.listTracTopWebsites.map((site, index) => `
+            <li class="flex justify-between items-center py-2 ${index < stats.listTracTopWebsites.length - 1 ? 'border-b border-slate-700/50' : ''}">
+                <span class="text-slate-300 text-sm">${site.name}</span>
+                <span class="text-purple-400 font-bold text-sm">${numFormat.format(site.views)}</span>
+            </li>
+        `).join('');
+    } else if (websitesList) {
+        websitesList.innerHTML = '<li class="text-slate-500 text-sm italic">No data available</li>';
+    }
+
+    // Populate Top Cities list
+    const citiesList = document.getElementById('list-top-cities');
+    if (citiesList && stats.listTracTopCities && stats.listTracTopCities.length > 0) {
+        citiesList.innerHTML = stats.listTracTopCities.map((city, index) => `
+            <li class="flex justify-between items-center py-2 ${index < stats.listTracTopCities.length - 1 ? 'border-b border-slate-700/50' : ''}">
+                <span class="text-slate-300 text-sm">${city.name}</span>
+                <span class="text-orange-400 font-bold text-sm">${numFormat.format(city.views)}</span>
+            </li>
+        `).join('');
+    } else if (citiesList) {
+        citiesList.innerHTML = '<li class="text-slate-500 text-sm italic">No data available</li>';
+    }
+}
+
+window.addEventListener('DOMContentLoaded', populateFunnelScoreboard);

@@ -63,6 +63,44 @@ const propertyData = {
     ],
     matterportLink: 'https://my.matterport.com/show/?m=cTSxrKFZQvR',
     matterportEmbedUrl: 'https://my.matterport.com/show/?m=cTSxrKFZQvR&play=1&mls=2',
+    
+    // BrokerBay Feedback Intelligence Log
+    feedbackLog: [],
+    
+    // Syndication Stats for Funnel Performance Scoreboard
+    // AUTOMATED FIELDS (sync_stats.py fills these from ListTrac API):
+    //   listTracTotalViews, listTracViews30Days, listTracInquiries, 
+    //   listTracTopWebsites, listTracTopCities, lastSync
+    // MANUAL FIELDS (enter these directly):
+    //   listHubReach, facebookReach, zillowSaves, facebookClicks,
+    //   matterportWalkthroughs, brokerBayShowings, mlsReverseProspectMatches
+    syndicationStats: {
+        // Top Funnel: Awareness (AUTOMATED from ListTrac)
+        listTracTotalViews: 3441,
+        listTracViews30Days: 973,
+        listTracTopWebsites: [{"name": "Zillow.com", "views": 349}, {"name": "Realtor.com", "views": 289}, {"name": "portal.onehome.com", "views": 80}, {"name": "Trulia", "views": 20}, {"name": "HAR.com", "views": 11}],
+        listTracTopCities: [{"name": "Rowlett, TX", "views": 27}, {"name": "Mesquite, TX", "views": 23}, {"name": "Sulphur Springs, TX", "views": 16}, {"name": "Kilgore, TX", "views": 12}, {"name": "Longview, TX", "views": 10}],
+        
+        // Top Funnel: Awareness (MANUAL entry)
+        listHubReach: 0,
+        facebookReach: 0,
+        
+        // Mid Funnel: Engagement (AUTOMATED from ListTrac)
+        listTracInquiries: 8,
+        
+        // Mid Funnel: Engagement (MANUAL entry)
+        zillowSaves: 0,
+        facebookClicks: 0,
+        matterportWalkthroughs: 0,
+        
+        // Bottom Funnel: Conversion (MANUAL entry)
+        brokerBayShowings: 0,
+        mlsReverseProspectMatches: 0,
+
+        // Metadata for the Command Center
+        mlsNumber: '21178024',
+        lastSync: 'February 24, 2026'
+    },
     cdom: 0,
     downPaymentPct: 0.20,
     marketRate: 0.0616,

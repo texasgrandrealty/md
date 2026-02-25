@@ -1,0 +1,49 @@
+name: Weekly ListTrac Sync
+
+on:
+  schedule:
+    - cron: '0 16 * * 1'  # Every Monday at 10:00 AM Central Time
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  sync-listtrac-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Python dependencies
+        run: pip install requests
+
+      - name: Run script
+        run: python sync_stats.py
+        env:
+          REPORTING_EMAIL: ${{ secrets.REPORTING_EMAIL }}
+          REPORTING_APP_PASSWORD: ${{ secrets.REPORTING_APP_PASSWORD }}
+
+      - name: Configure Git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check for changes and commit
+        run: |
+          git add data.js
+          if git diff --staged --quiet; then
+            echo "No changes detected in data.js"
+          else
+            git commit -m "Automated Weekly Sync: ListTrac Data"
+            git pull --rebase origin main
+            git push
+          fi
