@@ -2383,6 +2383,9 @@ function syncSyndicationUI() {
     }
 
     console.log('✅ syncSyndicationUI complete — BrokerBay:', showings, '| Ratio:', ratioValue);
+
+    console.log('FINAL OVERRIDE: Setting BrokerBay to:', propertyData.syndicationStats.brokerBayShowings);
+    document.getElementById('stat-brokerbay-showings').innerText = propertyData.syndicationStats.brokerBayShowings;
 }
 
 // --- MASTER INITIALIZATION ---
