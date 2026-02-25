@@ -2833,37 +2833,41 @@
             injectDynamicData();
             populatePropertyData();
 
-            // CRITICAL hard-set values after data injection
+            // Data Bridge: BrokerBay showings counter from data.js
             const showingsEl = document.getElementById('stat-brokerbay-showings');
             if (showingsEl) {
-                showingsEl.textContent = '1';
+                showingsEl.textContent = propertyData.syndicationStats.brokerBayShowings;
             }
 
-            const feb242026Feedback = Array.isArray(propertyData.feedbackLog)
-                ? propertyData.feedbackLog.find(function(entry) {
-                    return entry && entry.date === '02/24/2026';
-                })
-                : null;
-
+            // Data Bridge: Feedback table from propertyData.feedbackLog
+            const feedbackEntries = Array.isArray(propertyData.feedbackLog) ? propertyData.feedbackLog : [];
             const feedbackBody = document.getElementById('brokerbay-feedback-body');
             if (feedbackBody) {
                 feedbackBody.innerHTML = '';
-                if (feb242026Feedback) {
+                feedbackEntries.forEach(function(entry) {
+                    const pillColor = entry.interest === 'Unknown'
+                        ? 'bg-slate-100 text-slate-600'
+                        : entry.interest === 'Interested'
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : entry.interest === 'Not Interested'
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-slate-100 text-slate-600';
                     feedbackBody.insertAdjacentHTML('beforeend', `
                         <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-8 py-5 text-sm font-bold text-slate-900 whitespace-nowrap">${feb242026Feedback.date}</td>
+                            <td class="px-8 py-5 text-sm font-bold text-slate-900 whitespace-nowrap">${entry.date}</td>
                             <td class="px-8 py-5">
-                                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter bg-slate-100 text-slate-600">${feb242026Feedback.interest}</span>
+                                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${pillColor}">${entry.interest}</span>
                             </td>
-                            <td class="px-8 py-5 text-sm text-slate-600 leading-relaxed">${feb242026Feedback.comments}</td>
+                            <td class="px-8 py-5 text-sm text-slate-600 leading-relaxed">${entry.comments}</td>
                         </tr>
                     `);
-                }
+                });
             }
 
             const feedbackCountPill = document.getElementById('feedback-count-pill');
             if (feedbackCountPill) {
-                feedbackCountPill.textContent = feb242026Feedback ? '1 Total Entry' : '0 Total Entries';
+                const count = feedbackEntries.length;
+                feedbackCountPill.textContent = count + ' Total ' + (count === 1 ? 'Entry' : 'Entries');
             }
 
             // Migrated initialization logic from logic.js window.onload
