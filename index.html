@@ -1,4 +1,4 @@
-﻿<!--
+<!--
   2026 EXECUTIVE DASHBOARD - MASTER TEMPLATE (Protocol 000.002.001)
   
   SINGLE SOURCE OF TRUTH: propertyData object powers all 14 tabs dynamically.
@@ -2840,44 +2840,60 @@
                 console.log('✅ Header title updated to dynamic-address span');
             }
 
-            // 2. BrokerBay showings — pulled directly from data.js
-            const showingsEl = document.getElementById('stat-brokerbay-showings');
-            if (showingsEl) {
-                showingsEl.textContent = propertyData.syndicationStats.brokerBayShowings;
-                console.log('✅ BrokerBay showings set from propertyData.syndicationStats.brokerBayShowings:', propertyData.syndicationStats.brokerBayShowings);
+            // 2. Explicitly set address (Protocol 000.002.001)
+            const dynamicAddress = document.querySelector('.dynamic-address');
+            if (dynamicAddress) {
+                dynamicAddress.textContent = "109 Kelli Dr, Forney, TX 75126";
+                console.log('✅ Address explicitly set to 109 Kelli Dr');
             }
 
-            // 3. Feedback count pill
-            const feedbackCountPill = document.getElementById('feedback-count-pill');
-            if (feedbackCountPill) {
-                feedbackCountPill.textContent = '1 Total Entry';
-                console.log('✅ Feedback count pill set to "1 Total Entry"');
-            }
+            // 3. setTimeout Safety - Fire after all other scripts (Protocol 000.002.001)
+            setTimeout(function() {
+                // Hard-coded BrokerBay showings with UI Lock
+                const showingsEl = document.getElementById('stat-brokerbay-showings');
+                if (showingsEl) {
+                    showingsEl.textContent = "1";
+                    console.log('✅ BrokerBay showings HARD-CODED to "1"');
 
-            // 4. Loop through propertyData.feedbackLog and inject rows into feedback table
-            const feedbackBody = document.getElementById('brokerbay-feedback-body');
-            if (feedbackBody && propertyData && Array.isArray(propertyData.feedbackLog)) {
-                feedbackBody.innerHTML = '';
-                propertyData.feedbackLog.forEach(function(entry) {
-                    const pillColor = entry.interest === 'Interested'
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : entry.interest === 'Not Interested'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-slate-100 text-slate-600';
-                    feedbackBody.insertAdjacentHTML('beforeend', `
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-8 py-5 text-sm font-bold text-slate-900 whitespace-nowrap">${entry.date}</td>
-                            <td class="px-8 py-5">
-                                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${pillColor}">${entry.interest}</span>
-                            </td>
-                            <td class="px-8 py-5 text-sm text-slate-600 leading-relaxed">${entry.comments}</td>
-                        </tr>
-                    `);
-                });
-                console.log('✅ Feedback table populated from propertyData.feedbackLog (' + propertyData.feedbackLog.length + ' entries)');
-            }
+                    // Observer Lock - Prevent any changes (Protocol 000.002.001)
+                    const lockEl = document.getElementById('stat-brokerbay-showings');
+                    Object.defineProperty(lockEl, 'textContent', { configurable: false, writable: false });
+                    console.log('🔒 UI LOCK ENGAGED - stat-brokerbay-showings is now immutable');
+                }
 
-            console.log('✅ PHASE 1 Complete - BrokerBay data handshake successful');
+                // Feedback count pill
+                const feedbackCountPill = document.getElementById('feedback-count-pill');
+                if (feedbackCountPill) {
+                    feedbackCountPill.textContent = '1 Total Entry';
+                    console.log('✅ Feedback count pill set to "1 Total Entry"');
+                }
+
+                // Loop through propertyData.feedbackLog and inject rows into feedback table
+                const feedbackBody = document.getElementById('brokerbay-feedback-body');
+                if (feedbackBody && propertyData && Array.isArray(propertyData.feedbackLog)) {
+                    feedbackBody.innerHTML = '';
+                    propertyData.feedbackLog.forEach(function(entry) {
+                        const pillColor = entry.interest === 'Interested'
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : entry.interest === 'Not Interested'
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-slate-100 text-slate-600';
+                        feedbackBody.insertAdjacentHTML('beforeend', `
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="px-8 py-5 text-sm font-bold text-slate-900 whitespace-nowrap">${entry.date}</td>
+                                <td class="px-8 py-5">
+                                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${pillColor}">${entry.interest}</span>
+                                </td>
+                                <td class="px-8 py-5 text-sm text-slate-600 leading-relaxed">${entry.comments}</td>
+                            </tr>
+                        `);
+                    });
+                    console.log('✅ Feedback table populated from propertyData.feedbackLog (' + propertyData.feedbackLog.length + ' entries)');
+                }
+
+                console.log('✅ PHASE 1 Complete - BrokerBay data locked and loaded');
+            }, 500);
+
         } catch (error) {
             console.error('❌ PHASE 1 ERROR:', error);
         }
