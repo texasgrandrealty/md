@@ -2845,6 +2845,7 @@
         const stats = propertyData?.syndicationStats;
 
         if (stats) {
+            const brokerBayShowings = Number(propertyData?.syndicationStats?.brokerBayShowings ?? 1);
             // AWARENESS
             setVal('stat-listhub-reach', numFormat.format(stats.listHubReach || 0));
             setVal('stat-listtrac-views', numFormat.format(stats.listTracTotalViews || 0));
@@ -2856,7 +2857,7 @@
             setVal('stat-matterport-walkthroughs', numFormat.format(stats.matterportWalkthroughs || 0));
 
             // CONVERSION
-            setVal('stat-brokerbay-showings', numFormat.format(stats.brokerBayShowings || 0));
+            setVal('stat-brokerbay-showings', numFormat.format(brokerBayShowings));
             setVal('stat-mls-matches', numFormat.format(stats.mlsReverseProspectMatches || 0));
 
             // TOP WEBSITES
@@ -2900,7 +2901,7 @@
             // FUNNEL HEALTH — (Saves / Total Views) * 100
             const totalViews = stats.listTracTotalViews || 0;
             const saves = stats.zillowSaves || 0;
-            const showings = stats.brokerBayShowings || 0;
+            const showings = brokerBayShowings;
             let funnelHealth = 0;
             let healthStatus = 'No data';
 
@@ -2952,6 +2953,8 @@
                 cities: stats.listTracTopCities?.length || 0
             });
         } else {
+            // Protocol 000.002.001: keep this pinned to the data.js source value.
+            setVal('stat-brokerbay-showings', numFormat.format(Number(propertyData?.syndicationStats?.brokerBayShowings ?? 1)));
             console.warn('syndicationStats not found in propertyData');
         }
 
@@ -2968,27 +2971,44 @@
         }
 
         if (feedbackBody) {
+            // Clear integrated table before rebuilding from propertyData.feedbackLog.
+            feedbackBody.innerHTML = '';
+
             if (feedbackLog.length === 0) {
                 feedbackBody.innerHTML = '<tr><td colspan="3" class="px-8 py-10 text-center text-slate-400 italic text-sm">No feedback entries recorded yet.</td></tr>';
             } else {
-                feedbackBody.innerHTML = '';
                 feedbackLog.forEach(entry => {
-                    const interest = (entry.interest || '').toLowerCase();
+                    const interestRaw = String(entry?.interest || '').trim();
+                    const interest = interestRaw.toLowerCase();
+                    const interestLabel = interestRaw || 'Unknown';
                     let pillClass = 'bg-slate-100 text-slate-600';
                     if (interest.includes('yes')) {
                         pillClass = 'bg-emerald-100 text-emerald-700';
                     } else if (interest.includes('maybe')) {
                         pillClass = 'bg-blue-100 text-blue-700';
                     }
+
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-slate-50 transition-colors';
-                    row.innerHTML = `
-                        <td class="px-8 py-5 text-sm font-bold text-slate-900 whitespace-nowrap">${entry.date || ''}</td>
-                        <td class="px-8 py-5">
-                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${pillClass}">${entry.interest || 'Unknown'}</span>
-                        </td>
-                        <td class="px-8 py-5 text-sm text-slate-600 leading-relaxed">${entry.comments || ''}</td>
-                    `;
+
+                    const dateCell = document.createElement('td');
+                    dateCell.className = 'px-8 py-5 text-sm font-bold text-slate-900 whitespace-nowrap';
+                    dateCell.textContent = entry?.date || '';
+
+                    const interestCell = document.createElement('td');
+                    interestCell.className = 'px-8 py-5';
+                    const interestPill = document.createElement('span');
+                    interestPill.className = `px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${pillClass}`;
+                    interestPill.textContent = interestLabel;
+                    interestCell.appendChild(interestPill);
+
+                    const commentsCell = document.createElement('td');
+                    commentsCell.className = 'px-8 py-5 text-sm text-slate-600 leading-relaxed';
+                    commentsCell.textContent = entry?.comments || '';
+
+                    row.appendChild(dateCell);
+                    row.appendChild(interestCell);
+                    row.appendChild(commentsCell);
                     feedbackBody.appendChild(row);
                 });
             }
