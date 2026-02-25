@@ -2282,37 +2282,31 @@ function calculateFunnelHealth() {
     };
 }
 
-// --- HARDENED ASSET INTELLIGENCE ENGINE ---
-function initializeHardenedIntel() {
-    const hs = propertyData.hardenedStats;
-    if (!hs) {
-        console.error('🛡️ HARDENED INTEL: hardenedStats missing — ABORT');
+// --- LIVE INTELLIGENCE ENGINE ---
+function refreshLiveIntelligence() {
+    const stats = propertyData.syndicationStats;
+    if (!stats) {
+        console.error('LIVE INTEL: syndicationStats missing — ABORT');
         return;
     }
 
-    const forceLock = (id, value) => {
+    const set = (id, value) => {
         const el = document.getElementById(id);
-        if (el) {
-            el.textContent = value;
-            el.setAttribute('data-locked', 'true');
-        }
+        if (el) el.innerText = value;
     };
 
-    forceLock('hardened-listhub-reach', numberFormat.format(hs.listHubReach));
-    forceLock('hardened-zillow-saves', numberFormat.format(hs.zillowSaves));
-    forceLock('hardened-brokerbay-showings', hs.totalShowings);
-
-    console.log('🛡️ HARDENED INTEL: Value 1 successfully locked.');
+    set('live-total-views', numberFormat.format(stats.listTracTotalViews));
+    set('live-zillow-saves', numberFormat.format(stats.zillowSaves));
+    set('live-brokerbay-count', stats.brokerBayShowings || 1);
 
     // CONVERSION HEALTH bar
     const health = calculateFunnelHealth();
     if (health) {
-        const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        setText('funnel-health-percentage', health.healthPercentage + '%');
-        setText('funnel-health-status', health.statusText);
-        const bar = document.getElementById('funnel-health-bar');
+        set('live-funnel-percentage', health.healthPercentage + '%');
+        set('live-funnel-status', health.statusText);
+        const bar = document.getElementById('live-funnel-bar');
         if (bar) bar.style.width = health.healthPercentage + '%';
-        const warning = document.getElementById('funnel-health-warning');
+        const warning = document.getElementById('live-funnel-warning');
         if (warning && health.warningText) {
             warning.textContent = health.warningText;
             warning.classList.remove('hidden');
@@ -2320,9 +2314,8 @@ function initializeHardenedIntel() {
     }
 
     // TOP WEBSITES list
-    const stats = propertyData.syndicationStats;
-    const websitesList = document.getElementById('list-top-websites');
-    if (websitesList && stats && Array.isArray(stats.listTracTopWebsites)) {
+    const websitesList = document.getElementById('live-top-websites');
+    if (websitesList && Array.isArray(stats.listTracTopWebsites)) {
         websitesList.innerHTML = stats.listTracTopWebsites.map(site =>
             `<li class="flex justify-between items-center text-sm">
                 <span class="text-slate-300">${site.name}</span>
@@ -2332,8 +2325,8 @@ function initializeHardenedIntel() {
     }
 
     // TOP CITIES list
-    const citiesList = document.getElementById('list-top-cities');
-    if (citiesList && stats && Array.isArray(stats.listTracTopCities)) {
+    const citiesList = document.getElementById('live-top-cities');
+    if (citiesList && Array.isArray(stats.listTracTopCities)) {
         citiesList.innerHTML = stats.listTracTopCities.map(city =>
             `<li class="flex justify-between items-center text-sm">
                 <span class="text-slate-300">${city.name}</span>
@@ -2343,10 +2336,10 @@ function initializeHardenedIntel() {
     }
 
     // BROKERBAY FEEDBACK TABLE
-    const feedbackBody = document.getElementById('brokerbay-feedback-body');
+    const feedbackBody = document.getElementById('live-feedback-body');
     if (feedbackBody && Array.isArray(propertyData.feedbackLog)) {
         const count = propertyData.feedbackLog.length;
-        const pill = document.getElementById('feedback-count-pill');
+        const pill = document.getElementById('live-feedback-count-pill');
         if (pill) pill.textContent = count + ' Total Entr' + (count === 1 ? 'y' : 'ies');
         feedbackBody.innerHTML = '';
         propertyData.feedbackLog.forEach(entry => {
@@ -2366,6 +2359,8 @@ function initializeHardenedIntel() {
             `);
         });
     }
+
+    console.log('LIVE INTEL: Metrics refreshed successfully.');
 }
 
 // --- MASTER INITIALIZATION ---
@@ -2375,7 +2370,7 @@ window.addEventListener('DOMContentLoaded', function() {
     try {
         detectPropertyUnit();
         injectDynamicData();
-        initializeHardenedIntel();
+        refreshLiveIntelligence();
         populatePropertyData();
     } catch (err) {
         console.error('Phase 1 (core data injection) failed:', err);

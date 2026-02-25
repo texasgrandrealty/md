@@ -366,6 +366,7 @@
                                 <button id="nav-rpr" class="nav-btn" onclick="showTab('rpr', this)">Value and Equity</button>
                                 <button id="nav-liquidity" class="nav-btn" onclick="showTab('liquidity', this)">Liquidity</button>
                                 <button id="nav-campaign" class="nav-btn" onclick="showTab('campaign', this)">Marketing Strategy</button>
+                                <button id="nav-live-intel" class="nav-btn" onclick="showTab('live-intel', this)">Live Intelligence</button>
                                 <button id="nav-rates" class="nav-btn" onclick="showTab('rates', this)">Rates & Financing</button>
                                 <button id="nav-incentives" class="nav-btn" onclick="showTab('options', this)">Incentives</button>
                                 <button id="nav-decision-path" class="nav-btn" onclick="showTab('decision-path', this)">Decision Path</button>
@@ -1614,145 +1615,6 @@
                         
                     </div>
 
-                    <!-- HARDENED ASSET INTELLIGENCE: Renamed targets to prevent ghost script overwrites -->
-                    <div class="mt-10" id="hardened-asset-intel">
-                        <div class="bg-slate-900 rounded-3xl p-8 text-white shadow-2xl">
-                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                                <div>
-                                    <h3 class="text-lg md:text-xl font-extrabold tracking-[0.18em] uppercase text-blue-200 mb-2">
-                                        HARDENED ASSET INTELLIGENCE
-                                    </h3>
-                                    <p class="text-sm text-slate-200">
-                                        Force-locked metrics. Ghost-script resistant. Updated weekly.
-                                    </p>
-                                </div>
-                                <div class="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 rounded-full border border-emerald-500/50 mt-4 md:mt-0">
-                                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                                    <span class="text-emerald-400 text-[10px] font-bold uppercase tracking-widest">Hardened</span>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-
-                                <!-- COLUMN 1: AWARENESS -->
-                                <div class="bg-slate-800/60 rounded-2xl p-6 border border-slate-700">
-                                    <div class="flex items-center gap-2 mb-4">
-                                        <span class="text-blue-400 text-xl">&#128225;</span>
-                                        <h4 class="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-300">AWARENESS</h4>
-                                    </div>
-                                    <div class="flex justify-between items-center py-3">
-                                        <span class="text-slate-300 text-sm">ListHub Reach</span>
-                                        <span id="hardened-listhub-reach" class="text-white font-bold text-lg">0</span>
-                                    </div>
-                                </div>
-
-                                <!-- COLUMN 2: ENGAGEMENT -->
-                                <div class="bg-slate-800/60 rounded-2xl p-6 border border-slate-700">
-                                    <div class="flex items-center gap-2 mb-4">
-                                        <span class="text-yellow-400 text-xl">&#128065;</span>
-                                        <h4 class="text-xs font-extrabold uppercase tracking-[0.2em] text-yellow-300">ENGAGEMENT</h4>
-                                    </div>
-                                    <div class="flex justify-between items-center py-3">
-                                        <span class="text-slate-300 text-sm">Zillow Saves</span>
-                                        <span id="hardened-zillow-saves" class="text-white font-bold text-lg">0</span>
-                                    </div>
-                                </div>
-
-                                <!-- COLUMN 3: CONVERSION -->
-                                <div class="bg-slate-800/60 rounded-2xl p-6 border border-slate-700">
-                                    <div class="flex items-center gap-2 mb-4">
-                                        <span class="text-emerald-400 text-xl">&#128100;</span>
-                                        <h4 class="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-300">CONVERSION</h4>
-                                    </div>
-                                    <div class="flex justify-between items-center py-3">
-                                        <span class="text-slate-300 text-sm">BrokerBay Showings</span>
-                                        <span id="hardened-brokerbay-showings" class="text-white font-bold text-lg">1</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- CONVERSION HEALTH Progress Bar -->
-                            <div class="bg-slate-800/40 rounded-2xl p-6 border border-slate-700">
-                                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
-                                    <div>
-                                        <h4 class="text-sm font-extrabold uppercase tracking-[0.15em] text-white mb-1">CONVERSION HEALTH</h4>
-                                        <p id="funnel-health-status" class="text-xs text-slate-400">Calculating funnel velocity...</p>
-                                    </div>
-                                    <span id="funnel-health-percentage" class="text-2xl font-black text-blue-400">--%</span>
-                                </div>
-                                <div class="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
-                                    <div id="funnel-health-bar" class="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full transition-all duration-700" style="width: 0%"></div>
-                                </div>
-                                <p id="funnel-health-warning" class="mt-3 text-xs font-semibold text-yellow-400 hidden"></p>
-                            </div>
-
-                            <!-- TOP WEBSITES & CITIES TREND LISTS -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                                <!-- Top Websites -->
-                                <div class="bg-slate-800/60 rounded-2xl p-6 border border-slate-700">
-                                    <div class="flex items-center gap-2 mb-4">
-                                        <span class="text-purple-400 text-xl">&#127760;</span>
-                                        <h4 class="text-xs font-extrabold uppercase tracking-[0.2em] text-purple-300">TOP WEBSITES</h4>
-                                    </div>
-                                    <ul id="list-top-websites" class="space-y-3">
-                                    </ul>
-                                </div>
-
-                                <!-- Top Cities -->
-                                <div class="bg-slate-800/60 rounded-2xl p-6 border border-slate-700">
-                                    <div class="flex items-center gap-2 mb-4">
-                                        <span class="text-orange-400 text-xl">&#127961;</span>
-                                        <h4 class="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-300">TOP CITIES</h4>
-                                    </div>
-                                    <ul id="list-top-cities" class="space-y-3">
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-10">
-                        <div class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
-                            <div class="bg-slate-900 px-8 py-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                <div>
-                                    <h3 class="text-lg font-black text-white uppercase tracking-widest">BrokerBay Feedback Intelligence</h3>
-                                    <p class="text-blue-300 text-xs mt-1">Direct Field Reports from Verified Showing Agents</p>
-                                </div>
-                                <div id="feedback-count-pill" class="px-4 py-1 bg-blue-600 text-white text-[10px] font-bold uppercase tracking-widest rounded-full">0 Total Entries</div>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse">
-                                    <thead class="bg-slate-50 border-b border-slate-200">
-                                        <tr>
-                                            <th class="px-8 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Date</th>
-                                            <th class="px-8 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Interest</th>
-                                            <th class="px-8 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Agent Comments</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="brokerbay-feedback-body" class="divide-y divide-slate-100">
-                                        <tr><td colspan="3" class="px-8 py-10 text-center text-slate-400 italic text-sm">Loading verified feedback...</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                <section id="live-client-portal" class="hidden mt-12 pt-12 border-t-4 border-emerald-500/30">
-                    <div class="bg-slate-900 rounded-[3rem] p-10 shadow-2xl border border-emerald-500/50">
-                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                            <div>
-                                <h2 class="text-2xl font-black text-emerald-400 tracking-tighter uppercase">Live Asset Intelligence</h2>
-                                <p class="text-slate-400 text-sm">Real-Time Performance Tracking for 109 Kelli Dr</p>
-                            </div>
-                            <div class="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 rounded-full border border-emerald-500/50">
-                                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                                <span class="text-emerald-500 text-[10px] font-bold uppercase tracking-widest">Feed: Active</span>
-                            </div>
-                        </div>
-                        
-                        <div id="live-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            </div>
-                    </div>
-                </section>
-                
                 <!-- Marketing Strategy Footer -->
                 <div class="mt-12 text-center pb-8">
                     <div class="inline-flex items-center gap-3 px-6 py-3 bg-slate-900 rounded-full border border-slate-700">
@@ -1762,6 +1624,116 @@
                         </a>
                     </div>
                     <p class="text-slate-600 text-sm mt-3">Contact us for marketing strategy consultation</p>
+                </div>
+            </div>
+            <!-- 8. LIVE INTELLIGENCE TAB -->
+            <div id="tab-live-intel" class="py-8 md:py-12 hidden">
+                <div class="max-w-7xl mx-auto px-6 sm:px-8">
+
+                    <div class="mb-10 border-l-4 border-blue-600 pl-6 py-2">
+                        <span class="text-[0.65rem] font-black text-blue-600 uppercase tracking-[0.25em] mb-1 block">
+                            SYNDICATION // PERFORMANCE METRICS
+                        </span>
+                        <h1 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                            Real-Time Asset Intelligence
+                            <span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold uppercase tracking-wider">
+                                Live
+                            </span>
+                        </h1>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+
+                        <!-- COLUMN 1: AWARENESS -->
+                        <div class="bg-slate-900 rounded-3xl p-8 border border-slate-700 shadow-2xl flex flex-col items-center text-center">
+                            <div class="flex items-center gap-2 mb-5">
+                                <span class="text-blue-400 text-xl">&#128225;</span>
+                                <h4 class="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-300">AWARENESS</h4>
+                            </div>
+                            <span id="live-total-views" class="text-5xl font-black text-white mb-2">--</span>
+                            <span class="text-slate-400 text-sm font-semibold">ListTrac Views</span>
+                        </div>
+
+                        <!-- COLUMN 2: ENGAGEMENT -->
+                        <div class="bg-slate-900 rounded-3xl p-8 border border-slate-700 shadow-2xl flex flex-col items-center text-center">
+                            <div class="flex items-center gap-2 mb-5">
+                                <span class="text-yellow-400 text-xl">&#128065;</span>
+                                <h4 class="text-xs font-extrabold uppercase tracking-[0.2em] text-yellow-300">ENGAGEMENT</h4>
+                            </div>
+                            <span id="live-zillow-saves" class="text-5xl font-black text-white mb-2">--</span>
+                            <span class="text-slate-400 text-sm font-semibold">Zillow Saves</span>
+                        </div>
+
+                        <!-- COLUMN 3: CONVERSION -->
+                        <div class="bg-slate-900 rounded-3xl p-8 border border-slate-700 shadow-2xl flex flex-col items-center text-center">
+                            <div class="flex items-center gap-2 mb-5">
+                                <span class="text-emerald-400 text-xl">&#128100;</span>
+                                <h4 class="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-300">CONVERSION</h4>
+                            </div>
+                            <span id="live-brokerbay-count" class="text-5xl font-black text-white mb-2">1</span>
+                            <span class="text-slate-400 text-sm font-semibold">Showings</span>
+                        </div>
+
+                    </div>
+
+                    <!-- TOP WEBSITES & CITIES -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                        <div class="bg-slate-900 rounded-3xl p-8 border border-slate-700 shadow-2xl">
+                            <div class="flex items-center gap-2 mb-4">
+                                <span class="text-purple-400 text-xl">&#127760;</span>
+                                <h4 class="text-xs font-extrabold uppercase tracking-[0.2em] text-purple-300">TOP WEBSITES</h4>
+                            </div>
+                            <ul id="live-top-websites" class="space-y-3"></ul>
+                        </div>
+                        <div class="bg-slate-900 rounded-3xl p-8 border border-slate-700 shadow-2xl">
+                            <div class="flex items-center gap-2 mb-4">
+                                <span class="text-orange-400 text-xl">&#127961;</span>
+                                <h4 class="text-xs font-extrabold uppercase tracking-[0.2em] text-orange-300">TOP CITIES</h4>
+                            </div>
+                            <ul id="live-top-cities" class="space-y-3"></ul>
+                        </div>
+                    </div>
+
+                    <!-- CONVERSION HEALTH -->
+                    <div class="bg-slate-900 rounded-3xl p-8 border border-slate-700 shadow-2xl mb-10">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
+                            <div>
+                                <h4 class="text-sm font-extrabold uppercase tracking-[0.15em] text-white mb-1">CONVERSION HEALTH</h4>
+                                <p id="live-funnel-status" class="text-xs text-slate-400">Calculating funnel velocity...</p>
+                            </div>
+                            <span id="live-funnel-percentage" class="text-2xl font-black text-blue-400">--%</span>
+                        </div>
+                        <div class="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
+                            <div id="live-funnel-bar" class="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full transition-all duration-700" style="width: 0%"></div>
+                        </div>
+                        <p id="live-funnel-warning" class="mt-3 text-xs font-semibold text-yellow-400 hidden"></p>
+                    </div>
+
+                    <!-- BROKERBAY FEEDBACK TABLE -->
+                    <div class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+                        <div class="bg-slate-900 px-8 py-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div>
+                                <h3 class="text-lg font-black text-white uppercase tracking-widest">BrokerBay Feedback Intelligence</h3>
+                                <p class="text-blue-300 text-xs mt-1">Direct Field Reports from Verified Showing Agents</p>
+                            </div>
+                            <div id="live-feedback-count-pill" class="px-4 py-1 bg-blue-600 text-white text-[10px] font-bold uppercase tracking-widest rounded-full">0 Total Entries</div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-8 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Date</th>
+                                        <th class="px-8 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Interest</th>
+                                        <th class="px-8 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Agent Comments</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="live-feedback-body" class="divide-y divide-slate-100">
+                                    <tr><td colspan="3" class="px-8 py-10 text-center text-slate-400 italic text-sm">Loading verified feedback...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
             </div>
             <!-- 5. MARKET RATE UPDATE PAGE -->
