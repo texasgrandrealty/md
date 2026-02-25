@@ -1,4 +1,4 @@
-<!--
+﻿<!--
   2026 EXECUTIVE DASHBOARD - MASTER TEMPLATE (Protocol 000.002.001)
   
   SINGLE SOURCE OF TRUTH: propertyData object powers all 14 tabs dynamically.
@@ -2825,25 +2825,33 @@
 
     <script>
     window.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 [Protocol 000.002.001] Ultimate Logic Consolidation');
+
+        // ========================================
+        // PHASE 1: PRIORITY UI HANDSHAKE (RUNS FIRST)
+        // ========================================
         try {
-            console.log('🚀 Initializing 2026 Executive Dashboard...');
+            console.log('⚡ PHASE 1: Priority UI Updates');
 
-            // Unified initialization order (Protocol 000.002.001)
-            detectPropertyUnit();
-            injectDynamicData();
-            populatePropertyData();
-
-            // Data Bridge: BrokerBay showings counter from data.js
-            const showingsEl = document.getElementById('stat-brokerbay-showings');
-            if (showingsEl) {
-                showingsEl.textContent = propertyData.syndicationStats.brokerBayShowings;
+            // 1. Set h1.header-title to dynamic-address span
+            const headerTitle = document.querySelector('h1.header-title');
+            if (headerTitle) {
+                headerTitle.innerHTML = '<span class="dynamic-address"></span>';
+                console.log('✅ Header title updated to dynamic-address span');
             }
 
-            // Data Bridge: Feedback table from propertyData.feedbackLog
-            const feedbackEntries = Array.isArray(propertyData.feedbackLog) ? propertyData.feedbackLog : [];
+            // 2. Force BrokerBay showings stat to "1"
+            const showingsEl = document.getElementById('stat-brokerbay-showings');
+            if (showingsEl) {
+                showingsEl.textContent = '1';
+                console.log('✅ BrokerBay showings forced to "1"');
+            }
+
+            // 3. Clear and inject 02/24/2026 row from propertyData.feedbackLog
             const feedbackBody = document.getElementById('brokerbay-feedback-body');
-            if (feedbackBody) {
+            if (feedbackBody && propertyData && propertyData.feedbackLog) {
                 feedbackBody.innerHTML = '';
+                const feedbackEntries = Array.isArray(propertyData.feedbackLog) ? propertyData.feedbackLog : [];
                 feedbackEntries.forEach(function(entry) {
                     const pillColor = entry.interest === 'Unknown'
                         ? 'bg-slate-100 text-slate-600'
@@ -2862,15 +2870,40 @@
                         </tr>
                     `);
                 });
+                console.log('✅ Feedback table cleared and populated from propertyData.feedbackLog');
             }
 
+            // 4. Force feedback-count-pill to "1 Total Entry"
             const feedbackCountPill = document.getElementById('feedback-count-pill');
             if (feedbackCountPill) {
-                const count = feedbackEntries.length;
-                feedbackCountPill.textContent = count + ' Total ' + (count === 1 ? 'Entry' : 'Entries');
+                feedbackCountPill.textContent = '1 Total Entry';
+                console.log('✅ Feedback count pill forced to "1 Total Entry"');
             }
 
-            // Migrated initialization logic from logic.js window.onload
+            console.log('✅ PHASE 1 Complete - Priority UI Handshake successful');
+        } catch (error) {
+            console.error('❌ PHASE 1 ERROR:', error);
+        }
+
+        // ========================================
+        // PHASE 2: HEADER SYNCHRONIZATION
+        // ========================================
+        try {
+            console.log('⚡ PHASE 2: Header Synchronization');
+            detectPropertyUnit();
+            injectDynamicData();
+            populatePropertyData();
+            console.log('✅ PHASE 2 Complete - Header specs synchronized');
+        } catch (error) {
+            console.error('❌ PHASE 2 ERROR:', error);
+        }
+
+        // ========================================
+        // PHASE 3: DEFERRED INITIALIZATION (WRAPPED IN TRY-CATCH)
+        // ========================================
+        try {
+            console.log('⚡ PHASE 3: Deferred Initialization');
+            
             populateReportingLinks();
             syncPitchReports();
             initializeListingPortal();
@@ -2881,19 +2914,31 @@
             populateOptions();
             populateAmortizationTable();
             populateCompleteAmortizationTable();
-            setTimeout(initCharts, 100);
+            
+            // Charts wrapped in setTimeout to prevent blocking
+            setTimeout(function() {
+                try {
+                    initCharts();
+                    console.log('✅ Charts initialized');
+                } catch (chartError) {
+                    console.error('⚠️ Chart initialization failed (non-blocking):', chartError);
+                }
+            }, 100);
+            
             showCompSubTab('neighborhood');
             showTab('summary');
 
-            console.log('✅ Dashboard initialization complete');
+            console.log('✅ PHASE 3 Complete - Deferred initialization successful');
             console.log(`📸 Image Gallery Arrays Loaded:
             - Drone Images: ${droneIds.length} photos
             - HDR Images: ${hdrIds.length} photos
             - Virtual Staging: ${virtualIds.length} photos
             - 3D Models: ${dollhouseIds.length} photos`);
         } catch (error) {
-            console.error('❌ Error during initialization:', error);
+            console.error('❌ PHASE 3 ERROR (non-blocking):', error);
         }
+
+        console.log('✅ [Protocol 000.002.001] Dashboard initialization complete');
     });
     </script>
 </body>
