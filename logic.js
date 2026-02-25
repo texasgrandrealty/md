@@ -2298,9 +2298,11 @@ function initializeHardenedIntel() {
         }
     };
 
-    forceLock('intel-listhub-reach', numberFormat.format(hs.listHubReach));
-    forceLock('intel-zillow-saves', numberFormat.format(hs.zillowSaves));
-    forceLock('intel-brokerbay-showings', hs.totalShowings);
+    forceLock('hardened-listhub-reach', numberFormat.format(hs.listHubReach));
+    forceLock('hardened-zillow-saves', numberFormat.format(hs.zillowSaves));
+    forceLock('hardened-brokerbay-showings', hs.totalShowings);
+
+    console.log('🛡️ HARDENED INTEL: Value 1 successfully locked.');
 
     // CONVERSION HEALTH bar
     const health = calculateFunnelHealth();
@@ -2364,8 +2366,6 @@ function initializeHardenedIntel() {
             `);
         });
     }
-
-    console.log('🛡️ HARDENED INTEL: Locked BrokerBay to', propertyData.hardenedStats.totalShowings);
 }
 
 // --- MASTER INITIALIZATION ---
