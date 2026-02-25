@@ -2281,12 +2281,12 @@ function calculateFunnelHealth() {
     };
 }
 
-// --- SYNDICATION UI SYNC ENGINE ---
+// --- SYNDICATION STATS SYNC ENGINE ---
 // Single source of truth: maps propertyData.syndicationStats -> DOM elements
-function syncSyndicationUI() {
+function syncSyndicationStats() {
     const stats = propertyData.syndicationStats;
     if (!stats) {
-        console.warn('syncSyndicationUI: syndicationStats missing from propertyData');
+        console.warn('syncSyndicationStats: syndicationStats missing from propertyData');
         return;
     }
 
@@ -2376,7 +2376,7 @@ function syncSyndicationUI() {
         });
     }
 
-    console.log('✅ syncSyndicationUI complete — BrokerBay:', showings, '| Ratio:', ratioValue);
+    console.log('✅ syncSyndicationStats complete — BrokerBay:', showings, '| Ratio:', ratioValue);
 }
 
 // --- MASTER INITIALIZATION ---
@@ -2386,10 +2386,15 @@ window.addEventListener('DOMContentLoaded', function() {
     try {
         detectPropertyUnit();
         injectDynamicData();
-        syncSyndicationUI();
         populatePropertyData();
     } catch (err) {
         console.error('Phase 1 (core data injection) failed:', err);
+    }
+
+    try {
+        syncSyndicationStats();
+    } catch (err) {
+        console.error('Phase 1.5 (syndication stats sync) failed:', err);
     }
 
     try {
