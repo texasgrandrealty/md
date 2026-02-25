@@ -2825,13 +2825,13 @@
 
     <script>
     window.addEventListener('DOMContentLoaded', function() {
-        console.log('🚀 [Protocol 000.002.001] Ultimate Logic Consolidation');
+        console.log('🚀 [Protocol 000.002.001] Ultimate Handshake — Sole Authority');
 
         // ========================================
-        // PHASE 1: PRIORITY UI HANDSHAKE (RUNS FIRST)
+        // PHASE 1: BROKERBAY DATA HANDSHAKE (RUNS FIRST)
         // ========================================
         try {
-            console.log('⚡ PHASE 1: Priority UI Updates');
+            console.log('⚡ PHASE 1: BrokerBay Data Handshake');
 
             // 1. Set h1.header-title to dynamic-address span
             const headerTitle = document.querySelector('h1.header-title');
@@ -2840,26 +2840,30 @@
                 console.log('✅ Header title updated to dynamic-address span');
             }
 
-            // 2. Force BrokerBay showings stat to "1"
+            // 2. BrokerBay showings — pulled directly from data.js
             const showingsEl = document.getElementById('stat-brokerbay-showings');
             if (showingsEl) {
-                showingsEl.textContent = '1';
-                console.log('✅ BrokerBay showings forced to "1"');
+                showingsEl.textContent = propertyData.syndicationStats.brokerBayShowings;
+                console.log('✅ BrokerBay showings set from propertyData.syndicationStats.brokerBayShowings:', propertyData.syndicationStats.brokerBayShowings);
             }
 
-            // 3. Clear and inject 02/24/2026 row from propertyData.feedbackLog
+            // 3. Feedback count pill
+            const feedbackCountPill = document.getElementById('feedback-count-pill');
+            if (feedbackCountPill) {
+                feedbackCountPill.textContent = '1 Total Entry';
+                console.log('✅ Feedback count pill set to "1 Total Entry"');
+            }
+
+            // 4. Loop through propertyData.feedbackLog and inject rows into feedback table
             const feedbackBody = document.getElementById('brokerbay-feedback-body');
-            if (feedbackBody && propertyData && propertyData.feedbackLog) {
+            if (feedbackBody && propertyData && Array.isArray(propertyData.feedbackLog)) {
                 feedbackBody.innerHTML = '';
-                const feedbackEntries = Array.isArray(propertyData.feedbackLog) ? propertyData.feedbackLog : [];
-                feedbackEntries.forEach(function(entry) {
-                    const pillColor = entry.interest === 'Unknown'
-                        ? 'bg-slate-100 text-slate-600'
-                        : entry.interest === 'Interested'
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : entry.interest === 'Not Interested'
-                                ? 'bg-red-100 text-red-700'
-                                : 'bg-slate-100 text-slate-600';
+                propertyData.feedbackLog.forEach(function(entry) {
+                    const pillColor = entry.interest === 'Interested'
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : entry.interest === 'Not Interested'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-slate-100 text-slate-600';
                     feedbackBody.insertAdjacentHTML('beforeend', `
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="px-8 py-5 text-sm font-bold text-slate-900 whitespace-nowrap">${entry.date}</td>
@@ -2870,17 +2874,10 @@
                         </tr>
                     `);
                 });
-                console.log('✅ Feedback table cleared and populated from propertyData.feedbackLog');
+                console.log('✅ Feedback table populated from propertyData.feedbackLog (' + propertyData.feedbackLog.length + ' entries)');
             }
 
-            // 4. Force feedback-count-pill to "1 Total Entry"
-            const feedbackCountPill = document.getElementById('feedback-count-pill');
-            if (feedbackCountPill) {
-                feedbackCountPill.textContent = '1 Total Entry';
-                console.log('✅ Feedback count pill forced to "1 Total Entry"');
-            }
-
-            console.log('✅ PHASE 1 Complete - Priority UI Handshake successful');
+            console.log('✅ PHASE 1 Complete - BrokerBay data handshake successful');
         } catch (error) {
             console.error('❌ PHASE 1 ERROR:', error);
         }
@@ -2903,7 +2900,7 @@
         // ========================================
         try {
             console.log('⚡ PHASE 3: Deferred Initialization');
-            
+
             populateReportingLinks();
             syncPitchReports();
             initializeListingPortal();
@@ -2914,7 +2911,7 @@
             populateOptions();
             populateAmortizationTable();
             populateCompleteAmortizationTable();
-            
+
             // Charts wrapped in setTimeout to prevent blocking
             setTimeout(function() {
                 try {
@@ -2924,7 +2921,7 @@
                     console.error('⚠️ Chart initialization failed (non-blocking):', chartError);
                 }
             }, 100);
-            
+
             showCompSubTab('neighborhood');
             showTab('summary');
 
