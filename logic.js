@@ -2169,9 +2169,6 @@ window.onload = function() {
         
         // HYBRID UNIT DETECTION: Detect property type (SqFt vs Acres) first
         detectPropertyUnit();
-        
-        injectDynamicData();
-        populatePropertyData();
         populateReportingLinks();
         calculateOption3Totals();
         attachEventListeners();
