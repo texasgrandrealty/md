@@ -2280,3 +2280,144 @@ function calculateFunnelHealth() {
             : 'Healthy conversion velocity. Engagement translating to physical traffic.'
     };
 }
+
+// --- SYNDICATION UI SYNC ENGINE ---
+// Single source of truth: maps propertyData.syndicationStats -> DOM elements
+function syncSyndicationUI() {
+    const stats = propertyData.syndicationStats;
+    if (!stats) {
+        console.warn('syncSyndicationUI: syndicationStats missing from propertyData');
+        return;
+    }
+
+    const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    };
+
+    // AWARENESS column
+    setText('stat-listhub-reach', numberFormat.format(stats.listHubReach || 0));
+    setText('stat-listtrac-views', numberFormat.format(stats.listTracTotalViews || 0));
+    setText('listTracViews30Days', numberFormat.format(stats.listTracViews30Days || 0));
+    const fbSpend = stats.facebook?.facebookSpend;
+    setText('stat-facebook-spend', fbSpend != null ? currencyFormat.format(fbSpend) : '$0');
+
+    // ENGAGEMENT column
+    setText('stat-listtrac-inquiries', numberFormat.format(stats.listTracInquiries || 0));
+    setText('stat-zillow-saves', numberFormat.format(stats.zillowSaves || 0));
+    setText('stat-matterport-walkthroughs', numberFormat.format(stats.matterportWalkthroughs || 0));
+
+    // CONVERSION column
+    const showings = stats.brokerBayShowings || 0;
+    const saves = stats.zillowSaves || 0;
+    setText('stat-brokerbay-showings', numberFormat.format(showings));
+    setText('stat-mls-matches', numberFormat.format(stats.mlsReverseProspectMatches || 0));
+
+    const ratioValue = saves > 0 ? ((showings / saves) * 100).toFixed(1) + '%' : 'N/A';
+    setText('stat-showing-ratio', ratioValue);
+
+    // CONVERSION HEALTH bar
+    const health = calculateFunnelHealth();
+    if (health) {
+        setText('funnel-health-percentage', health.healthPercentage + '%');
+        setText('funnel-health-status', health.statusText);
+        const bar = document.getElementById('funnel-health-bar');
+        if (bar) bar.style.width = health.healthPercentage + '%';
+        const warning = document.getElementById('funnel-health-warning');
+        if (warning && health.warningText) {
+            warning.textContent = health.warningText;
+            warning.classList.remove('hidden');
+        }
+    }
+
+    // TOP WEBSITES list
+    const websitesList = document.getElementById('list-top-websites');
+    if (websitesList && Array.isArray(stats.listTracTopWebsites)) {
+        websitesList.innerHTML = stats.listTracTopWebsites.map(site =>
+            `<li class="flex justify-between items-center text-sm">
+                <span class="text-slate-300">${site.name}</span>
+                <span class="text-white font-bold">${numberFormat.format(site.views)}</span>
+            </li>`
+        ).join('');
+    }
+
+    // TOP CITIES list
+    const citiesList = document.getElementById('list-top-cities');
+    if (citiesList && Array.isArray(stats.listTracTopCities)) {
+        citiesList.innerHTML = stats.listTracTopCities.map(city =>
+            `<li class="flex justify-between items-center text-sm">
+                <span class="text-slate-300">${city.name}</span>
+                <span class="text-white font-bold">${numberFormat.format(city.views)}</span>
+            </li>`
+        ).join('');
+    }
+
+    // BROKERBAY FEEDBACK TABLE
+    const feedbackBody = document.getElementById('brokerbay-feedback-body');
+    if (feedbackBody && Array.isArray(propertyData.feedbackLog)) {
+        const count = propertyData.feedbackLog.length;
+        setText('feedback-count-pill', count + ' Total Entr' + (count === 1 ? 'y' : 'ies'));
+        feedbackBody.innerHTML = '';
+        propertyData.feedbackLog.forEach(entry => {
+            const pillColor = entry.interest === 'Interested'
+                ? 'bg-emerald-100 text-emerald-700'
+                : entry.interest === 'Not Interested'
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-slate-100 text-slate-600';
+            feedbackBody.insertAdjacentHTML('beforeend', `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-8 py-5 text-sm font-bold text-slate-900 whitespace-nowrap">${entry.date}</td>
+                    <td class="px-8 py-5">
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${pillColor}">${entry.interest}</span>
+                    </td>
+                    <td class="px-8 py-5 text-sm text-slate-600 leading-relaxed">${entry.comments}</td>
+                </tr>
+            `);
+        });
+    }
+
+    console.log('✅ syncSyndicationUI complete — BrokerBay:', showings, '| Ratio:', ratioValue);
+}
+
+// --- MASTER INITIALIZATION ---
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Dashboard initialization started');
+
+    try {
+        detectPropertyUnit();
+        injectDynamicData();
+        syncSyndicationUI();
+        populatePropertyData();
+    } catch (err) {
+        console.error('Phase 1 (core data injection) failed:', err);
+    }
+
+    try {
+        populateReportingLinks();
+        syncPitchReports();
+        initializeListingPortal();
+        calculateOption3Totals();
+        attachEventListeners();
+        setupCarouselKeyboardNavigation();
+        populateAllCompTables();
+        populateOptions();
+        populateAmortizationTable();
+        populateCompleteAmortizationTable();
+
+        setTimeout(function() {
+            try {
+                initCharts();
+                console.log('✅ Charts initialized');
+            } catch (chartError) {
+                console.error('Chart initialization failed (non-blocking):', chartError);
+            }
+        }, 100);
+
+        showCompSubTab('neighborhood');
+        showTab('summary');
+    } catch (err) {
+        console.error('Phase 2 (deferred initialization) failed:', err);
+    }
+
+    console.log('✅ Dashboard initialization complete');
+});
