@@ -2281,12 +2281,12 @@ function calculateFunnelHealth() {
     };
 }
 
-// --- SYNDICATION STATS SYNC ENGINE ---
+// --- SYNDICATION UI SYNC ENGINE ---
 // Single source of truth: maps propertyData.syndicationStats -> DOM elements
-function syncSyndicationStats() {
+function syncSyndicationUI() {
     const stats = propertyData.syndicationStats;
     if (!stats) {
-        console.warn('syncSyndicationStats: syndicationStats missing from propertyData');
+        console.warn('syncSyndicationUI: syndicationStats missing from propertyData');
         return;
     }
 
@@ -2299,8 +2299,12 @@ function syncSyndicationStats() {
     setText('stat-listhub-reach', numberFormat.format(stats.listHubReach || 0));
     setText('stat-listtrac-views', numberFormat.format(stats.listTracTotalViews || 0));
     setText('listTracViews30Days', numberFormat.format(stats.listTracViews30Days || 0));
-    const fbSpend = stats.facebook?.facebookSpend;
-    setText('stat-facebook-spend', fbSpend != null ? currencyFormat.format(fbSpend) : '$0');
+    const fbSpend = stats.facebookSpend;
+    if (fbSpend != null && fbSpend !== 0) {
+        setText('stat-facebook-spend', typeof fbSpend === 'string' ? fbSpend : currencyFormatDetailed.format(fbSpend));
+    } else {
+        setText('stat-facebook-spend', '$0');
+    }
 
     // ENGAGEMENT column
     setText('stat-listtrac-inquiries', numberFormat.format(stats.listTracInquiries || 0));
@@ -2376,7 +2380,7 @@ function syncSyndicationStats() {
         });
     }
 
-    console.log('✅ syncSyndicationStats complete — BrokerBay:', showings, '| Ratio:', ratioValue);
+    console.log('✅ syncSyndicationUI complete — BrokerBay:', showings, '| Ratio:', ratioValue);
 }
 
 // --- MASTER INITIALIZATION ---
@@ -2386,15 +2390,10 @@ window.addEventListener('DOMContentLoaded', function() {
     try {
         detectPropertyUnit();
         injectDynamicData();
+        syncSyndicationUI();
         populatePropertyData();
     } catch (err) {
         console.error('Phase 1 (core data injection) failed:', err);
-    }
-
-    try {
-        syncSyndicationStats();
-    } catch (err) {
-        console.error('Phase 1.5 (syndication stats sync) failed:', err);
     }
 
     try {

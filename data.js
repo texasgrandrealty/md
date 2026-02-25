@@ -82,14 +82,15 @@ const propertyData = {
     //   matterportWalkthroughs, brokerBayShowings, mlsReverseProspectMatches
     syndicationStats: {
         // Top Funnel: Awareness (AUTOMATED from ListTrac)
-        listTracTotalViews: 3478,
+        listTracTotalViews: 3458,
         listTracViews30Days: 989,
-        listTracTopWebsites: [{"name": "Zillow.com", "views": 361}, {"name": "Realtor.com", "views": 289}, {"name": "portal.onehome.com", "views": 79}, {"name": "Trulia", "views": 24}, {"name": "HAR.com", "views": 11}],
+        listTracTopWebsites: [{"name": "Zillow.com", "views": 349}, {"name": "Realtor.com", "views": 298}, {"name": "portal.onehome.com", "views": 80}, {"name": "Trulia", "views": 20}, {"name": "HAR.com", "views": 11}],
         listTracTopCities: [{"name": "Rowlett, TX", "views": 27}, {"name": "Mesquite, TX", "views": 26}, {"name": "Sulphur Springs, TX", "views": 17}, {"name": "Kilgore, TX", "views": 12}, {"name": "Longview, TX", "views": 10}],
         
         // Top Funnel: Awareness (MANUAL entry)
         listHubReach: 0,
         facebookReach: 0,
+        facebookSpend: '$42.50',
         
         // Mid Funnel: Engagement (AUTOMATED from ListTrac)
         listTracInquiries: 8,
@@ -121,15 +122,15 @@ const propertyData = {
     
     // Reporting Links for Transparency Command Center
     reportingLinks: {
-        'infographic': 'https://drive.google.com/file/d/1zkkB8Tzg_estZDqoKEDqX-b-ATf4m8vM/view?usp=drive_link',
+        'infographic': 'https://www.texasgrandrealty.com',
         'summary': 'https://drive.google.com/file/d/1UCden8LOdeNvIAG0qyUxaMNEruRyBG_S/view?usp=drive_link',
-        'monthly-analysis': 'https://drive.google.com/file/d/1o3dIVocp9IykRXDNMmtXaaFdg8ygx8NT/view?usp=drive_link',
+        'monthly-analysis': 'https://www.texasgrandrealty.com',
         'social-media': 'https://drive.google.com/file/d/1vyjNPbw4_Nq9bpNm2HLrD9EvUQO89wTG/view?usp=drive_link',
         'website-traffic': 'https://drive.google.com/file/d/1OhR6NcsaRv8i97aqI_JjGVCK92TyMgad/view?usp=drive_link',
         'homes-com': 'https://www.homes.com',
         'realtor-com': 'https://drive.google.com/file/d/18pcSMos0ZgbJ3Skztsb82aeTquM64Gb7/view?usp=drive_link',
         'zillow-com': 'https://drive.google.com/file/d/14fAhNT0vbhphNaCmw0mtBLBKMnnJ8uMw/view?usp=drive_link',
-        'showing-activity': 'https://drive.google.com/file/d/1Fs4M58qowuTKMPM2dKim-ulPJyRDqZPm/view?usp=drive_link',
+        'showing-activity': 'https://www.brokerbay.com',
         'mls-activity': 'https://drive.google.com/file/d/1YNAuUJIrEQPE8x7CGVYwujLCEIks4d-n/view?usp=drive_link',
         'onehome': 'https://portal.onehome.com',
         'tgr-valuation': 'https://www.texasgrandrealty.com/cma/property-valuation/',
