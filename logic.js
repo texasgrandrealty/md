@@ -2284,6 +2284,8 @@ function calculateFunnelHealth() {
 // --- SYNDICATION UI SYNC ENGINE ---
 // Single source of truth: maps propertyData.syndicationStats -> DOM elements
 function syncSyndicationUI() {
+    console.log('DEBUG: BrokerBay Value is:', propertyData.syndicationStats.brokerBayShowings);
+    console.log('DEBUG: Target Element is:', document.getElementById('stat-brokerbay-showings'));
     const stats = propertyData.syndicationStats;
     if (!stats) {
         console.warn('syncSyndicationUI: syndicationStats missing from propertyData');
@@ -2385,6 +2387,7 @@ function syncSyndicationUI() {
 
 // --- MASTER INITIALIZATION ---
 window.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('stat-brokerbay-showings').textContent = propertyData.syndicationStats.brokerBayShowings;
     console.log('🚀 Dashboard initialization started');
 
     try {
