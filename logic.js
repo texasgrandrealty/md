@@ -2429,5 +2429,13 @@ window.addEventListener('DOMContentLoaded', function() {
         console.error('Phase 2 (deferred initialization) failed:', err);
     }
 
+    // FINAL DATA OVERRIDE
+    const bbValue = propertyData.syndicationStats.brokerBayShowings || 1;
+    const bbElement = document.getElementById('stat-brokerbay-showings');
+    if (bbElement) {
+        bbElement.innerText = bbValue;
+        console.log('CRITICAL SUCCESS: BrokerBay manually set to', bbValue);
+    }
+
     console.log('✅ Dashboard initialization complete');
 });
