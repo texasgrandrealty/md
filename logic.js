@@ -2332,19 +2332,15 @@ function populateFunnelScoreboard() {
     setVal('stat-listtrac-views', numFormat.format(stats.listTracTotalViews));
     setVal('listTracViews30Days', numFormat.format(stats.listTracViews30Days || 0));
     setVal('stat-facebook-reach', numFormat.format(stats.facebookReach));
-        // Update the Engagement section
-    setVal('stat-listtrac-inquiries', numFormat.format(stats.listTracInquiries)); // NEW: Points to your new key
-    setVal('stat-facebook-clicks', numFormat.format(stats.facebookClicks));
-    setVal('stat-matterport-walkthroughs', numFormat.format(stats.matterportWalkthroughs));
-    // Update the Conversion section
-    setVal('stat-brokerbay-showings', numFormat.format(stats.brokerBayShowings));
-    setVal('stat-mls-matches', numFormat.format(stats.mlsReverseProspectMatches));
-    setVal('stat-facebook-spend', currFormat.format(stats.facebookSpend));
-    setVal('stat-facebook-clicks', numFormat.format(stats.facebookClicks));
+    // Engagement section
+    setVal('stat-listtrac-inquiries', numFormat.format(stats.listTracInquiries));
     setVal('stat-zillow-saves', numFormat.format(stats.zillowSaves));
+    setVal('stat-facebook-clicks', numFormat.format(stats.facebookClicks));
     setVal('stat-matterport-walkthroughs', numFormat.format(stats.matterportWalkthroughs));
+    // Conversion section
     setVal('stat-brokerbay-showings', numFormat.format(stats.brokerBayShowings));
     setVal('stat-mls-matches', numFormat.format(stats.mlsReverseProspectMatches));
+    setVal('stat-facebook-spend', currFormat.format(stats.facebookSpend || 0));
 
     const health = calculateFunnelHealth();
     if (health) {
