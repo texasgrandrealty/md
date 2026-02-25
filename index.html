@@ -2824,199 +2824,32 @@
     </div>
 
     <script>
-    // ============================================================================
-    // MASTER DASHBOARD LOGIC ENGINE (Protocol 000.002.001)
-    // Single DOMContentLoaded — sole authority for all stat injection.
-    // Merges: ListTrac syndication data + BrokerBay feedback table mapping.
-    // Interest Pill: 'Yes' = Emerald | 'Maybe' = Blue | Default = Slate
-    // ============================================================================
-    document.addEventListener('DOMContentLoaded', function () {
-
-        const numFormat = new Intl.NumberFormat('en-US');
-
-        const setVal = (id, val) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = val;
-        };
-
-        // =====================================================================
-        // LISTTRAC SYNDICATION STATS
-        // =====================================================================
-        const stats = propertyData?.syndicationStats;
-
-        if (stats) {
-            const brokerBayShowings = Number(propertyData?.syndicationStats?.brokerBayShowings ?? 1);
-            // AWARENESS
-            setVal('stat-listhub-reach', numFormat.format(stats.listHubReach || 0));
-            setVal('stat-listtrac-views', numFormat.format(stats.listTracTotalViews || 0));
-            setVal('listTracViews30Days', numFormat.format(stats.listTracViews30Days || 0));
-
-            // ENGAGEMENT
-            setVal('stat-listtrac-inquiries', numFormat.format(stats.listTracInquiries || 0));
-            setVal('stat-zillow-saves', numFormat.format(stats.zillowSaves || 0));
-            setVal('stat-matterport-walkthroughs', numFormat.format(stats.matterportWalkthroughs || 0));
-
-            // CONVERSION
-            setVal('stat-brokerbay-showings', numFormat.format(brokerBayShowings));
-            setVal('stat-mls-matches', numFormat.format(stats.mlsReverseProspectMatches || 0));
-
-            // TOP WEBSITES
-            const websitesList = document.getElementById('list-top-websites');
-            if (websitesList) {
-                if (stats.listTracTopWebsites && stats.listTracTopWebsites.length > 0) {
-                    websitesList.innerHTML = '';
-                    stats.listTracTopWebsites.forEach((site, index) => {
-                        const li = document.createElement('li');
-                        li.className = `flex justify-between items-center py-2 ${index < stats.listTracTopWebsites.length - 1 ? 'border-b border-slate-700/50' : ''}`;
-                        li.innerHTML = `
-                            <span class="text-slate-300 text-sm">${site.name}</span>
-                            <span class="text-purple-400 font-bold text-sm">${numFormat.format(site.views)}</span>
-                        `;
-                        websitesList.appendChild(li);
-                    });
-                } else {
-                    websitesList.innerHTML = '<li class="text-slate-500 text-sm italic">No data available</li>';
-                }
-            }
-
-            // TOP CITIES
-            const citiesList = document.getElementById('list-top-cities');
-            if (citiesList) {
-                if (stats.listTracTopCities && stats.listTracTopCities.length > 0) {
-                    citiesList.innerHTML = '';
-                    stats.listTracTopCities.forEach((city, index) => {
-                        const li = document.createElement('li');
-                        li.className = `flex justify-between items-center py-2 ${index < stats.listTracTopCities.length - 1 ? 'border-b border-slate-700/50' : ''}`;
-                        li.innerHTML = `
-                            <span class="text-slate-300 text-sm">${city.name}</span>
-                            <span class="text-orange-400 font-bold text-sm">${numFormat.format(city.views)}</span>
-                        `;
-                        citiesList.appendChild(li);
-                    });
-                } else {
-                    citiesList.innerHTML = '<li class="text-slate-500 text-sm italic">No data available</li>';
-                }
-            }
-
-            // FUNNEL HEALTH — (Saves / Total Views) * 100
-            const totalViews = stats.listTracTotalViews || 0;
-            const saves = stats.zillowSaves || 0;
-            const showings = brokerBayShowings;
-            let funnelHealth = 0;
-            let healthStatus = 'No data';
-
-            if (totalViews > 0) {
-                funnelHealth = (saves / totalViews) * 100;
-                if (funnelHealth >= 5) {
-                    healthStatus = 'Excellent save rate - strong buyer intent';
-                } else if (funnelHealth >= 3) {
-                    healthStatus = 'Good save rate - healthy engagement';
-                } else if (funnelHealth >= 1) {
-                    healthStatus = 'Average save rate - monitor closely';
-                } else {
-                    healthStatus = 'Low save rate - consider price adjustment';
-                }
-            }
-
-            setVal('funnel-health-percentage', funnelHealth.toFixed(1) + '%');
-            setVal('funnel-health-status', healthStatus);
-
-            if (saves > 0) {
-                setVal('stat-showing-ratio', ((showings / saves) * 100).toFixed(1) + '%');
-            } else {
-                setVal('stat-showing-ratio', '--');
-            }
-
-            const healthBar = document.getElementById('funnel-health-bar');
-            if (healthBar) {
-                healthBar.style.width = Math.min(funnelHealth * 5, 100) + '%';
-                if (funnelHealth < 3) {
-                    healthBar.classList.remove('from-blue-600', 'to-blue-400');
-                    healthBar.classList.add('from-yellow-500', 'to-orange-500');
-                } else {
-                    healthBar.classList.remove('from-yellow-500', 'to-orange-500');
-                    healthBar.classList.add('from-blue-600', 'to-blue-400');
-                }
-            }
-
-            console.log('ListTrac Dashboard: Connected', {
-                listHubReach: stats.listHubReach,
-                totalViews,
-                views30Day: stats.listTracViews30Days,
-                inquiries: stats.listTracInquiries,
-                zillowSaves: saves,
-                matterportWalkthroughs: stats.matterportWalkthroughs,
-                brokerBayShowings: showings,
-                mlsMatches: stats.mlsReverseProspectMatches,
-                funnelHealth: funnelHealth.toFixed(2) + '%',
-                websites: stats.listTracTopWebsites?.length || 0,
-                cities: stats.listTracTopCities?.length || 0
-            });
-        } else {
-            // Protocol 000.002.001: keep this pinned to the data.js source value.
-            setVal('stat-brokerbay-showings', numFormat.format(Number(propertyData?.syndicationStats?.brokerBayShowings ?? 1)));
-            console.warn('syndicationStats not found in propertyData');
+    window.addEventListener('DOMContentLoaded', function() {
+        const showingsEl = document.getElementById('stat-brokerbay-showings');
+        if (showingsEl) {
+            showingsEl.textContent = propertyData.syndicationStats.brokerBayShowings;
         }
 
-        // =====================================================================
-        // BROKERBAY FEEDBACK INTELLIGENCE TABLE
-        // Interest Pill: 'Yes' = Emerald | 'Maybe' = Blue | Default = Slate
-        // =====================================================================
         const feedbackBody = document.getElementById('brokerbay-feedback-body');
-        const feedbackPill = document.getElementById('feedback-count-pill');
-        const feedbackLog = propertyData?.feedbackLog || [];
-
-        if (feedbackPill) {
-            const entryWord = feedbackLog.length === 1 ? 'Entry' : 'Entries';
-            feedbackPill.textContent = `${feedbackLog.length} Total ${entryWord}`;
-        }
-
         if (feedbackBody) {
-            // Clear integrated table before rebuilding from propertyData.feedbackLog.
             feedbackBody.innerHTML = '';
-
-            if (feedbackLog.length === 0) {
-                feedbackBody.innerHTML = '<tr><td colspan="3" class="px-8 py-10 text-center text-slate-400 italic text-sm">No feedback entries recorded yet.</td></tr>';
-            } else {
-                feedbackLog.forEach(entry => {
-                    const interestRaw = String(entry?.interest || '').trim();
-                    const interest = interestRaw.toLowerCase();
-                    const interestLabel = interestRaw || 'Unknown';
-                    let pillClass = 'bg-slate-100 text-slate-600';
-                    if (interest.includes('yes')) {
-                        pillClass = 'bg-emerald-100 text-emerald-700';
-                    } else if (interest.includes('maybe')) {
-                        pillClass = 'bg-blue-100 text-blue-700';
-                    }
-
-                    const row = document.createElement('tr');
-                    row.className = 'hover:bg-slate-50 transition-colors';
-
-                    const dateCell = document.createElement('td');
-                    dateCell.className = 'px-8 py-5 text-sm font-bold text-slate-900 whitespace-nowrap';
-                    dateCell.textContent = entry?.date || '';
-
-                    const interestCell = document.createElement('td');
-                    interestCell.className = 'px-8 py-5';
-                    const interestPill = document.createElement('span');
-                    interestPill.className = `px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${pillClass}`;
-                    interestPill.textContent = interestLabel;
-                    interestCell.appendChild(interestPill);
-
-                    const commentsCell = document.createElement('td');
-                    commentsCell.className = 'px-8 py-5 text-sm text-slate-600 leading-relaxed';
-                    commentsCell.textContent = entry?.comments || '';
-
-                    row.appendChild(dateCell);
-                    row.appendChild(interestCell);
-                    row.appendChild(commentsCell);
-                    feedbackBody.appendChild(row);
-                });
-            }
+            propertyData.feedbackLog.forEach(function(entry) {
+                feedbackBody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-8 py-5 text-sm font-bold text-slate-900 whitespace-nowrap">${entry.date}</td>
+                        <td class="px-8 py-5">
+                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter bg-slate-100 text-slate-600">${entry.interest}</span>
+                        </td>
+                        <td class="px-8 py-5 text-sm text-slate-600 leading-relaxed">${entry.comments}</td>
+                    </tr>
+                `);
+            });
         }
 
-        console.log('BrokerBay Feedback: Loaded', { entries: feedbackLog.length });
-
+        const feedbackCountPill = document.getElementById('feedback-count-pill');
+        if (feedbackCountPill) {
+            feedbackCountPill.textContent = '1 Total Entry';
+        }
     });
     </script>
 </body>
