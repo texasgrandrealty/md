@@ -1,4 +1,4 @@
-<!--
+﻿<!--
   2026 EXECUTIVE DASHBOARD - MASTER TEMPLATE (Protocol 000.002.001)
   
   SINGLE SOURCE OF TRUTH: propertyData object powers all 14 tabs dynamically.
@@ -2849,24 +2849,9 @@
 
             // 3. setTimeout Safety - Fire after all other scripts (Protocol 000.002.001)
             setTimeout(function() {
-                // Hard-coded BrokerBay showings with UI Lock
-                const showingsEl = document.getElementById('stat-brokerbay-showings');
-                if (showingsEl) {
-                    showingsEl.textContent = "1";
-                    console.log('✅ BrokerBay showings HARD-CODED to "1"');
-
-                    // Observer Lock - Prevent any changes (Protocol 000.002.001)
-                    const lockEl = document.getElementById('stat-brokerbay-showings');
-                    Object.defineProperty(lockEl, 'textContent', { configurable: false, writable: false });
-                    console.log('🔒 UI LOCK ENGAGED - stat-brokerbay-showings is now immutable');
-                }
-
-                // Feedback count pill
-                const feedbackCountPill = document.getElementById('feedback-count-pill');
-                if (feedbackCountPill) {
-                    feedbackCountPill.textContent = '1 Total Entry';
-                    console.log('✅ Feedback count pill set to "1 Total Entry"');
-                }
+                // Phase 1 - querySelectorAll hits every card (Protocol 000.002.001)
+                document.querySelectorAll('#stat-brokerbay-showings').forEach(el => el.textContent = "1");
+                document.querySelectorAll('#feedback-count-pill').forEach(el => el.textContent = "1 Total Entry");
 
                 // Loop through propertyData.feedbackLog and inject rows into feedback table
                 const feedbackBody = document.getElementById('brokerbay-feedback-body');
