@@ -406,7 +406,7 @@ def fetch_brokerbay_feedback():
         mail.login(email_address, app_password)
         mail.select('inbox')
 
-        property_address = "109 Kelli"  # Adjust for partial matching
+        property_address = "REPLACE_WITH_ADDRESS"  # e.g., "109 Kelli"  # Adjust for partial matching
         feedback_searches = [
             (f'(SUBJECT "Feedback Submitted" SUBJECT "{property_address}")', "combined"),
             ('(SUBJECT "Feedback")', "feedback-only"),
@@ -604,6 +604,245 @@ def parse_brokerbay_html(html_content, email_date):
             'date': email_date,
             'interest': found_interest,
             'comments': found_comments
+        }
+
+    except Exception as e:
+        print(f"  [DEBUG] Error parsing BrokerBay HTML: {e}")
+def fetch_brokerbay_feedback():
+    """
+    Secure IMAP connection to Gmail to extract BrokerBay feedback emails.
+    Flexible: Search only for SUBJECT "Feedback Submitted", then filter for property locally.
+    Overwrites feedbackLog with most recent matching feedback entries.
+    Returns (feedback_count, feedback_log).
+    """
+    print("  [INFO] Connecting to Gmail IMAP for BrokerBay feedback...")
+
+    # Check if BeautifulSoup is available
+    if BeautifulSoup is None:
+        print("  [WARN] BeautifulSoup not available - skipping BrokerBay feedback extraction")
+        return 0, []
+
+    # Get credentials from environment variables
+    email_address = os.getenv('REPORTING_EMAIL')
+    app_password = os.getenv('REPORTING_APP_PASSWORD')
+
+    if not email_address or not app_password:
+        print("  [ERROR] Missing email credentials - set REPORTING_EMAIL and REPORTING_APP_PASSWORD environment variables")
+        return 0, []
+
+    # Try IMAP search
+    try:
+        mail = imaplib.IMAP4_SSL('imap.gmail.com')
+        mail.login(email_address, app_password)
+        mail.select('inbox')
+
+        property_phrases = ["109 Kelli", "Kelli Dr"]
+
+        print('  [DEBUG] IMAP search: looking for SUBJECT "Feedback Submitted"')
+        status, messages = mail.search(None, '(SUBJECT "Feedback Submitted")')
+        if status != 'OK':
+            print("  [ERROR] IMAP search for Feedback Submitted failed")
+            mail.close()
+            mail.logout()
+            return 0, []
+
+        message_ids = messages[0].split()
+        print(f"  [DEBUG] Found {len(message_ids)} total emails matching subject 'Feedback Submitted'.")
+
+        feedback_candidates = []
+        for idx, msg_id in enumerate(reversed(message_ids)):  # Newest-first
+            try:
+                print(f"  [DEBUG] Fetching email #{idx+1}, ID={msg_id.decode() if hasattr(msg_id,'decode') else msg_id}")
+                status, msg_data = mail.fetch(msg_id, '(RFC822)')
+                if status != 'OK':
+                    print(f"  [WARN] Unable to fetch message ID {msg_id}: status {status}")
+                    continue
+                if not msg_data or not msg_data[0]:
+                    print(f"  [WARN] No data returned for message ID {msg_id}")
+                    continue
+
+                email_body = msg_data[0][1]
+                email_message = email.message_from_bytes(email_body)
+
+                # Grab full subject, text, and html for local filtering
+                subj = email_message.get('Subject', '')
+                # Get payload for searching
+                body_text = ""
+                html_content = ""
+                if email_message.is_multipart():
+                    for part in email_message.walk():
+                        content_type = part.get_content_type()
+                        if content_type == "text/html":
+                            html_content = part.get_payload(decode=True).decode('utf-8', errors='ignore')
+                        elif content_type == "text/plain":
+                            body_text = part.get_payload(decode=True).decode('utf-8', errors='ignore')
+                else:
+                    content_type = email_message.get_content_type()
+                    if content_type == "text/html":
+                        html_content = email_message.get_payload(decode=True).decode('utf-8', errors='ignore')
+                    elif content_type == "text/plain":
+                        body_text = email_message.get_payload(decode=True).decode('utf-8', errors='ignore')
+
+                # Attempt local filter: must contain property phrase in subject or in html/text body
+                concatenated_search = (subj or "") + " " + (body_text or "") + " " + (html_content or "")
+                matched = any(phrase in concatenated_search for phrase in property_phrases)
+                print(f"  [DEBUG] Email #{idx+1} - Matched property filter: {matched} (Subject: '{subj}')")
+                if not matched:
+                    print(f"  [DEBUG] Skipping email #{idx+1} (does not match property: {property_phrases})")
+                    continue
+
+                # Passed filters: include as candidate
+                feedback_candidates.append({
+                    'email_message': email_message,
+                    'html_content': html_content,
+                })
+
+                if len(feedback_candidates) >= 10:
+                    break  # Only keep 10 most recent
+
+            except Exception as e:
+                print(f"  [ERROR] Error processing email #{idx+1}, ID {msg_id}: {e}")
+
+        feedback_log = []
+        for idx, candidate in enumerate(feedback_candidates):
+            email_message = candidate['email_message']
+            html_content = candidate['html_content']
+            # Date processing (repeat from above)
+            email_date = email_message.get('Date', '')
+            if email_date:
+                try:
+                    parsed_date = email.utils.parsedate_tz(email_date)
+                    if parsed_date:
+                        email_datetime = datetime.fromtimestamp(email.utils.mktime_tz(parsed_date))
+                        formatted_date = email_datetime.strftime('%m/%d/%Y')
+                    else:
+                        formatted_date = email_date[:10]  # Fallback
+                except Exception as e:
+                    print(f"  [WARN] Date parse failed: {e}")
+                    formatted_date = email_date[:10]
+            else:
+                formatted_date = 'Unknown'
+
+            parsed = parse_brokerbay_html(html_content, formatted_date)
+            if parsed:
+                print(f"  [DEBUG] Added valid feedback entry: {parsed}")
+                feedback_log.append(parsed)
+            else:
+                print(f"  [DEBUG] Skipped a matching email (could not extract feedback entry)")
+
+        mail.close()
+        mail.logout()
+
+        print(f"  [DEBUG] Final extracted feedback entry count (for data.js feedbackLog): {len(feedback_log)}")
+        return len(feedback_log), feedback_log
+
+    except Exception as e:
+        print(f"  [ERROR] Gmail IMAP connection failed: {e}")
+        return 0, []
+
+
+def parse_brokerbay_html(html_content, email_date):
+    """
+    Parse BrokerBay HTML email to extract feedback data.
+    Attempts to robustly pull Interest Level and (Agent) Comments even from nested tables.
+    Returns dict with {date, interest, comments} or None if parsing fails.
+    """
+    try:
+        soup = BeautifulSoup(html_content, 'html.parser')
+        # Search both table cells and fallback to plain text
+        interest_level = None
+        comments = None
+
+        # Search for all td's, th's, tr's with "Interest Level" and "Comments" nearby
+        for tag in soup.find_all(['tr', 'td', 'th']):
+            label = tag.get_text(separator=' ', strip=True)
+            # Handle Interest Level
+            if re.search(r'Interest\s*Level', label, re.IGNORECASE):
+                # look for neighbor (in row) with Yes/No/Maybe
+                siblings = tag.find_next_siblings()
+                value_found = False
+                for sib in siblings:
+                    value = sib.get_text(separator=' ', strip=True)
+                    m = re.search(r'(Yes|No|Maybe)', value, re.IGNORECASE)
+                    if m:
+                        interest_level = m.group(1).title()
+                        value_found = True
+                        break
+                if value_found:
+                    continue
+                # Or try parent tr for multiple tds
+                tr = tag.find_parent('tr')
+                if tr:
+                    tds = tr.find_all('td')
+                    for cell in tds:
+                        value = cell.get_text(separator=' ', strip=True)
+                        m = re.search(r'(Yes|No|Maybe)', value, re.IGNORECASE)
+                        if m:
+                            interest_level = m.group(1).title()
+                            break
+
+            # Handle Comments (Agent/Additional)
+            if re.search(r'(Additional\s*)?Comments?', label, re.IGNORECASE):
+                siblings = tag.find_next_siblings()
+                for sib in siblings:
+                    value = sib.get_text(separator=' ', strip=True)
+                    # Our definition: more than a couple words, does not repeat label
+                    if (value and not re.search(r'Comments?', value, re.IGNORECASE) 
+                        and len(value) > 6):
+                        comments = value[:250]
+                        break
+                if not comments:
+                    # If not in siblings, maybe another td in row
+                    tr = tag.find_parent('tr')
+                    if tr:
+                        tds = tr.find_all('td')
+                        for cell in tds:
+                            value = cell.get_text(separator=' ', strip=True)
+                            if (value and not re.search(r'Comments?', value, re.IGNORECASE)
+                                and len(value) > 6):
+                                comments = value[:250]
+                                break
+
+        # Fallback: Plain text scrapes (as previously)
+        plain_text = soup.get_text()
+        if not interest_level:
+            patterns = [
+                r'Interest\s*Level[:\-]?\s*(Yes|No|Maybe)',
+                r'Interest[:\-]?\s*(Yes|No|Maybe)',
+                r'Interested[:\-]?\s*(Yes|No|Maybe)',
+                r'(Yes|No|Maybe)\s*interest',
+            ]
+            for pattern in patterns:
+                m = re.search(pattern, plain_text, re.IGNORECASE)
+                if m:
+                    interest_level = m.group(1).title()
+                    break
+        if not comments:
+            patterns = [
+                r'(?:Additional\s*)?Comments?[:\-]?\s*([^\n\r]+)',
+                r'Feedback[:\-]?\s*([^\n\r]+)',
+                r'Notes?[:\-]?\s*([^\n\r]+)',
+            ]
+            for pattern in patterns:
+                m = re.search(pattern, plain_text, re.IGNORECASE)
+                if m:
+                    c = m.group(1).strip()
+                    if len(c) > 6 and not re.search(r'Comments?', c, re.IGNORECASE):
+                        comments = c[:250]
+                        break
+
+        if not interest_level:
+            interest_level = "Unknown"
+        if not comments:
+            comments = "No comments provided"
+
+        # Clean up extracted text
+        comments = re.sub(r'\s+', ' ', comments).strip()
+
+        return {
+            'date': email_date,
+            'interest': interest_level,
+            'comments': comments
         }
 
     except Exception as e:
@@ -889,7 +1128,7 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
 # ============================================================================
 
 def main():
-    print("Starting Sync for 109 Kelli Dr (Hybrid Strategy + BrokerBay Integration)...")
+    print("Starting Sync for Property (Hybrid Strategy + BrokerBay Integration)...")
     print("=" * 60)
     
     # Step 1: Try Primary Hybrid Scraper (sellernewsemailPreview)
