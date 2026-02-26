@@ -2283,101 +2283,83 @@ function calculateFunnelHealth() {
 }
 
 // --- LIVE INTELLIGENCE ENGINE ---
-function refreshLiveIntelligenceTab() {
-    const stats = propertyData.syndicationStats;
-    if (!stats) {
-        console.error('LIVE INTEL: syndicationStats missing — ABORT');
-        return;
-    }
-
-    const set = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) el.innerText = value;
-    };
-
-    set('live-total-views', numberFormat.format(stats.listTracTotalViews));
-    set('live-zillow-saves', numberFormat.format(stats.zillowSaves));
-
-    setTimeout(() => {
-        document.getElementById('intel-showings-count').innerText = propertyData.syndicationStats.brokerBayShowings || 1;
-    }, 3000);
-
-    // CONVERSION HEALTH bar
-    const health = calculateFunnelHealth();
-    if (health) {
-        set('live-funnel-percentage', health.healthPercentage + '%');
-        set('live-funnel-status', health.statusText);
-        const bar = document.getElementById('live-funnel-bar');
-        if (bar) bar.style.width = health.healthPercentage + '%';
-        const warning = document.getElementById('live-funnel-warning');
-        if (warning && health.warningText) {
-            warning.textContent = health.warningText;
-            warning.classList.remove('hidden');
+function refreshLiveIntelligence() {
+    try {
+        var stats = propertyData.syndicationStats;
+        var hardened = propertyData.hardenedStats || {};
+        if (!stats) {
+            console.error('LIVE INTEL: syndicationStats missing — ABORT');
+            return;
         }
+
+        var set = function(id, value) {
+            var el = document.getElementById(id);
+            if (el) el.innerText = value;
+        };
+
+        set('live-views-total', numberFormat.format(stats.listTracTotalViews || 0));
+        set('live-saves-zillow', numberFormat.format(hardened.zillowSaves || stats.zillowSaves || 0));
+        set('live-showings-count', stats.brokerBayShowings || 1);
+
+        var health = calculateFunnelHealth();
+        if (health) {
+            set('live-funnel-percentage', health.healthPercentage + '%');
+            set('live-funnel-status', health.statusText);
+            var bar = document.getElementById('live-funnel-bar');
+            if (bar) bar.style.width = health.healthPercentage + '%';
+            var warning = document.getElementById('live-funnel-warning');
+            if (warning && health.warningText) {
+                warning.textContent = health.warningText;
+                warning.classList.remove('hidden');
+            }
+        }
+
+        var websitesList = document.getElementById('live-top-websites');
+        if (websitesList && Array.isArray(stats.listTracTopWebsites)) {
+            websitesList.innerHTML = stats.listTracTopWebsites.map(function(site) {
+                return '<li class="flex justify-between items-center text-sm">' +
+                    '<span class="text-slate-300">' + site.name + '</span>' +
+                    '<span class="text-white font-bold">' + numberFormat.format(site.views) + '</span>' +
+                    '</li>';
+            }).join('');
+        }
+
+        var citiesList = document.getElementById('live-top-cities');
+        if (citiesList && Array.isArray(stats.listTracTopCities)) {
+            citiesList.innerHTML = stats.listTracTopCities.map(function(city) {
+                return '<li class="flex justify-between items-center text-sm">' +
+                    '<span class="text-slate-300">' + city.name + '</span>' +
+                    '<span class="text-white font-bold">' + numberFormat.format(city.views) + '</span>' +
+                    '</li>';
+            }).join('');
+        }
+
+        var feedbackBody = document.getElementById('live-feedback-body');
+        if (feedbackBody && Array.isArray(propertyData.feedbackLog)) {
+            var count = propertyData.feedbackLog.length;
+            var pill = document.getElementById('live-feedback-count-pill');
+            if (pill) pill.textContent = count + ' Total Entr' + (count === 1 ? 'y' : 'ies');
+            feedbackBody.innerHTML = '';
+            propertyData.feedbackLog.forEach(function(entry) {
+                var pillColor = entry.interest === 'Interested'
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : entry.interest === 'Not Interested'
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-slate-100 text-slate-600';
+                feedbackBody.insertAdjacentHTML('beforeend',
+                    '<tr class="hover:bg-slate-50 transition-colors">' +
+                    '<td class="px-8 py-5 text-sm font-bold text-slate-900 whitespace-nowrap">' + entry.date + '</td>' +
+                    '<td class="px-8 py-5"><span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ' + pillColor + '">' + entry.interest + '</span></td>' +
+                    '<td class="px-8 py-5 text-sm text-slate-600 leading-relaxed">' + entry.comments + '</td>' +
+                    '</tr>'
+                );
+            });
+        }
+
+        console.log('LIVE INTEL: refreshLiveIntelligence() complete.');
+    } catch (err) {
+        console.error('LIVE INTEL: refreshLiveIntelligence() failed:', err);
     }
-
-    // TOP WEBSITES list
-    const websitesList = document.getElementById('live-top-websites');
-    if (websitesList && Array.isArray(stats.listTracTopWebsites)) {
-        websitesList.innerHTML = stats.listTracTopWebsites.map(site =>
-            `<li class="flex justify-between items-center text-sm">
-                <span class="text-slate-300">${site.name}</span>
-                <span class="text-white font-bold">${numberFormat.format(site.views)}</span>
-            </li>`
-        ).join('');
-    }
-
-    // TOP CITIES list
-    const citiesList = document.getElementById('live-top-cities');
-    if (citiesList && Array.isArray(stats.listTracTopCities)) {
-        citiesList.innerHTML = stats.listTracTopCities.map(city =>
-            `<li class="flex justify-between items-center text-sm">
-                <span class="text-slate-300">${city.name}</span>
-                <span class="text-white font-bold">${numberFormat.format(city.views)}</span>
-            </li>`
-        ).join('');
-    }
-
-    // BROKERBAY FEEDBACK TABLE
-    const feedbackBody = document.getElementById('live-feedback-body');
-    if (feedbackBody && Array.isArray(propertyData.feedbackLog)) {
-        const count = propertyData.feedbackLog.length;
-        const pill = document.getElementById('live-feedback-count-pill');
-        if (pill) pill.textContent = count + ' Total Entr' + (count === 1 ? 'y' : 'ies');
-        feedbackBody.innerHTML = '';
-        propertyData.feedbackLog.forEach(entry => {
-            const pillColor = entry.interest === 'Interested'
-                ? 'bg-emerald-100 text-emerald-700'
-                : entry.interest === 'Not Interested'
-                    ? 'bg-red-100 text-red-700'
-                    : 'bg-slate-100 text-slate-600';
-            feedbackBody.insertAdjacentHTML('beforeend', `
-                <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="px-8 py-5 text-sm font-bold text-slate-900 whitespace-nowrap">${entry.date}</td>
-                    <td class="px-8 py-5">
-                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${pillColor}">${entry.interest}</span>
-                    </td>
-                    <td class="px-8 py-5 text-sm text-slate-600 leading-relaxed">${entry.comments}</td>
-                </tr>
-            `);
-        });
-    }
-
-    console.log('LIVE INTEL: Metrics refreshed successfully.');
-}
-
-function initializeHardenedIntel() {
-    var stats = propertyData.syndicationStats || {};
-    var hardened = propertyData.hardenedStats || {};
-
-    var viewsEl = document.getElementById('final-views-total');
-    if (viewsEl) viewsEl.innerText = stats.listTracTotalViews || 0;
-
-    var savesEl = document.getElementById('final-saves-zillow');
-    if (savesEl) savesEl.innerText = hardened.zillowSaves || stats.zillowSaves || 0;
-
-    var showingsEl = document.getElementById('final-showings-count');
-    if (showingsEl) showingsEl.innerText = stats.brokerBayShowings || 1;
 }
 
 // --- MASTER INITIALIZATION ---
@@ -2387,7 +2369,6 @@ window.addEventListener('DOMContentLoaded', function() {
     try {
         detectPropertyUnit();
         injectDynamicData();
-        refreshLiveIntelligenceTab();
         populatePropertyData();
     } catch (err) {
         console.error('Phase 1 (core data injection) failed:', err);
@@ -2420,6 +2401,9 @@ window.addEventListener('DOMContentLoaded', function() {
         console.error('Phase 2 (deferred initialization) failed:', err);
     }
 
-    initializeHardenedIntel();
     console.log('✅ Dashboard initialization complete');
+
+    setTimeout(function() {
+        refreshLiveIntelligence();
+    }, 2000);
 });

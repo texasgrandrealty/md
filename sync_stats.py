@@ -1150,7 +1150,7 @@ def main():
     # Step 3: Fetch BrokerBay Feedback Intelligence
     print("\n  --- BROKERBAY FEEDBACK EXTRACTION ---")
     brokerbay_count, brokerbay_feedback = fetch_brokerbay_feedback()
-    brokerbay_count = max(int(brokerbay_count), 1)
+    brokerbay_count = max(int(brokerbay_count or 0), 1)
     
     print("=" * 60)
     
