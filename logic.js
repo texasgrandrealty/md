@@ -2366,6 +2366,20 @@ function refreshLiveIntelligenceTab() {
     console.log('LIVE INTEL: Metrics refreshed successfully.');
 }
 
+function initializeHardenedIntel() {
+    var stats = propertyData.syndicationStats || {};
+    var hardened = propertyData.hardenedStats || {};
+
+    var viewsEl = document.getElementById('final-views-total');
+    if (viewsEl) viewsEl.innerText = stats.listTracTotalViews || 0;
+
+    var savesEl = document.getElementById('final-saves-zillow');
+    if (savesEl) savesEl.innerText = hardened.zillowSaves || stats.zillowSaves || 0;
+
+    var showingsEl = document.getElementById('final-showings-count');
+    if (showingsEl) showingsEl.innerText = stats.brokerBayShowings || 1;
+}
+
 // --- MASTER INITIALIZATION ---
 window.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Dashboard initialization started');
@@ -2406,5 +2420,6 @@ window.addEventListener('DOMContentLoaded', function() {
         console.error('Phase 2 (deferred initialization) failed:', err);
     }
 
+    initializeHardenedIntel();
     console.log('✅ Dashboard initialization complete');
 });

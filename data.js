@@ -88,10 +88,10 @@ const propertyData = {
     //   matterportWalkthroughs, brokerBayShowings, mlsReverseProspectMatches
     syndicationStats: {
         // Top Funnel: Awareness (AUTOMATED from ListTrac)
-        listTracTotalViews: 3511,
-        listTracViews30Days: 990,
-        listTracTopWebsites: [{"name": "Zillow.com", "views": 372}, {"name": "Realtor.com", "views": 285}, {"name": "portal.onehome.com", "views": 81}, {"name": "Trulia", "views": 24}, {"name": "HAR.com", "views": 12}],
-        listTracTopCities: [{"name": "Mesquite, TX", "views": 26}, {"name": "Rowlett, TX", "views": 23}, {"name": "Sulphur Springs, TX", "views": 17}, {"name": "Kilgore, TX", "views": 10}, {"name": "Longview, TX", "views": 10}],
+        listTracTotalViews: 3458,
+        listTracViews30Days: 989,
+        listTracTopWebsites: [{"name": "Zillow.com", "views": 349}, {"name": "Realtor.com", "views": 298}, {"name": "portal.onehome.com", "views": 80}, {"name": "Trulia", "views": 20}, {"name": "HAR.com", "views": 11}],
+        listTracTopCities: [{"name": "Rowlett, TX", "views": 27}, {"name": "Mesquite, TX", "views": 26}, {"name": "Sulphur Springs, TX", "views": 17}, {"name": "Kilgore, TX", "views": 12}, {"name": "Longview, TX", "views": 10}],
         
         // Top Funnel: Awareness (MANUAL entry)
         listHubReach: 0,
@@ -112,7 +112,7 @@ const propertyData = {
 
         // Metadata for the Command Center
         mlsNumber: '21178024',
-        lastSync: 'February 26, 2026'
+        lastSync: 'February 25, 2026'
     },
     cdom: 0,
     downPaymentPct: 0.20,
