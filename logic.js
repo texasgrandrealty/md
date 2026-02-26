@@ -2242,12 +2242,15 @@ function syncPitchReports() {
         }
     }
 }
-function initializeListingPortal() {
+function syncDashboardStats() {
     const portal = document.getElementById('live-client-portal');
     if (propertyData.isListingActive && portal) {
         portal.classList.remove('hidden');
         console.log("Listing Module: ONLINE");
     }
+
+    var el = document.getElementById('stat-brokerbay-showings');
+    if (el) el.innerText = propertyData.syndicationStats.brokerBayShowings || 1;
 }
 
 // --- FUNNEL PERFORMANCE SCOREBOARD ---
@@ -2286,7 +2289,6 @@ function calculateFunnelHealth() {
 function refreshLiveIntelligence() {
     try {
         var stats = propertyData.syndicationStats;
-        var hardened = propertyData.hardenedStats || {};
         if (!stats) {
             console.error('LIVE INTEL: syndicationStats missing — ABORT');
             return;
@@ -2298,8 +2300,8 @@ function refreshLiveIntelligence() {
         };
 
         set('live-views-total', numberFormat.format(stats.listTracTotalViews || 0));
-        set('live-saves-zillow', numberFormat.format(hardened.zillowSaves || stats.zillowSaves || 0));
-        set('live-showings-count', stats.brokerBayShowings || 1);
+        set('live-saves-zillow', numberFormat.format(stats.zillowSaves || 0));
+        set('stat-brokerbay-showings', stats.brokerBayShowings || 1);
 
         var health = calculateFunnelHealth();
         if (health) {
@@ -2377,7 +2379,7 @@ window.addEventListener('DOMContentLoaded', function() {
     try {
         populateReportingLinks();
         syncPitchReports();
-        initializeListingPortal();
+        syncDashboardStats();
         calculateOption3Totals();
         attachEventListeners();
         setupCarouselKeyboardNavigation();

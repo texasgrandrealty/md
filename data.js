@@ -61,12 +61,6 @@ const propertyData = {
         { phase: 3, price: 419900, label: 'Phase 3 (Day 60)', status: 'Expert Value' },
         { phase: 4, price: 404900, label: 'Phase 4 (Day 90+)', status: 'Liquidity Floor' }
     ],
-    hardenedStats: {
-        totalShowings: 1,
-        zillowSaves: 85,
-        listHubReach: 15400,
-        fbSpend: '--'
-    },
     matterportLink: 'https://my.matterport.com/show/?m=cTSxrKFZQvR',
     matterportEmbedUrl: 'https://my.matterport.com/show/?m=cTSxrKFZQvR&play=1&mls=2',
     
@@ -94,15 +88,15 @@ const propertyData = {
         listTracTopCities: [{"name": "Mesquite, TX", "views": 26}, {"name": "Rowlett, TX", "views": 23}, {"name": "Sulphur Springs, TX", "views": 17}, {"name": "Kilgore, TX", "views": 10}, {"name": "Longview, TX", "views": 10}],
         
         // Top Funnel: Awareness (MANUAL entry)
-        listHubReach: 0,
+        listHubReach: 15400,
         facebookReach: 0,
-        facebookSpend: '--',
+        fbSpend: '--',
         
         // Mid Funnel: Engagement (AUTOMATED from ListTrac)
         listTracInquiries: 8,
         
         // Mid Funnel: Engagement (MANUAL entry)
-        zillowSaves: 0,
+        zillowSaves: 85,
         facebookClicks: 0,
         matterportWalkthroughs: 0,
         

@@ -1074,12 +1074,17 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
     if content != old_content:
         print(f"    -> listTracTopCities: {len(top_cities)} entries")
     
-    # Update BrokerBay Showings (brokerBayShowings) — floor of 1, never zero
-    showings_value = max(brokerbay_count, 1) if brokerbay_count is not None else 1
+    # Update BrokerBay Showings (brokerBayShowings inside syndicationStats) — floor of 1, never zero
+    brokerbay_count = max(int(brokerbay_count or 0), 1)
     old_content = content
-    content = re.sub(r'(brokerBayShowings:\s*)\d+', f'\\g<1>{showings_value}', content)
+    content = re.sub(
+        r'(syndicationStats:\s*\{[\s\S]*?brokerBayShowings:\s*)\d+',
+        f'\\g<1>{brokerbay_count}',
+        content,
+        flags=re.DOTALL
+    )
     if content != old_content:
-        print(f"    -> brokerBayShowings: {showings_value}")
+        print(f"    -> brokerBayShowings: {brokerbay_count}")
     
     # Add/Update Feedback Log (feedbackLog) - Add to propertyData if not exists
     if brokerbay_feedback is not None:
