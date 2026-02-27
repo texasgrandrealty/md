@@ -2242,17 +2242,6 @@ function syncPitchReports() {
         }
     }
 }
-function syncDashboardStats() {
-    const portal = document.getElementById('live-client-portal');
-    if (propertyData.isListingActive && portal) {
-        portal.classList.remove('hidden');
-        console.log("Listing Module: ONLINE");
-    }
-
-    var el = document.getElementById('stat-brokerbay-showings');
-    if (el) el.innerText = propertyData.syndicationStats.brokerBayShowings || 1;
-}
-
 // --- FUNNEL PERFORMANCE SCOREBOARD ---
 // Calculates conversion health by comparing Showings vs Saves
 // If Showings < 5% of Saves, indicates price friction in the market
@@ -2288,34 +2277,52 @@ function calculateFunnelHealth() {
 // --- LIVE INTELLIGENCE ENGINE ---
 function refreshLiveIntelligence() {
     try {
-        var stats = propertyData.syndicationStats;
-        if (!stats) {
-            console.error('LIVE INTEL: syndicationStats missing — ABORT');
-            return;
-        }
+        const stats = propertyData.syndicationStats;
+        if (!stats) { console.error('LIVE INTEL: syndicationStats missing'); return; }
 
-        var set = function(id, value) {
-            var el = document.getElementById(id);
-            if (el) el.innerText = value;
-        };
+        const finalShowings = Math.max(Number(stats.brokerBayShowings) || 0, 1);
 
-        set('live-views-total', numberFormat.format(stats.listTracTotalViews || 0));
-        set('live-saves-zillow', numberFormat.format(stats.zillowSaves || 0));
-        set('stat-brokerbay-showings', stats.brokerBayShowings || 1);
+        // Update BOTH showing displays (Scoreboard + Live Intel)
+        const targets = ['live-showings-count', 'stat-brokerbay-showings'];
+        targets.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = finalShowings;
+        });
 
-        var health = calculateFunnelHealth();
+        // Update Views and Saves on Scoreboard
+        if (document.getElementById('stat-listtrac-views')) document.getElementById('stat-listtrac-views').innerText = stats.listTracTotalViews;
+        if (document.getElementById('stat-zillow-saves')) document.getElementById('stat-zillow-saves').innerText = stats.zillowSaves;
+
+        // Update Views and Saves on Live Intel tab
+        var formattedViews = numberFormat.format(Number(stats.listTracTotalViews) || 0);
+        var formattedSaves = numberFormat.format(Number(stats.zillowSaves) || 0);
+        var setEl = function(id, value) { var el = document.getElementById(id); if (el) el.innerText = value; };
+        setEl('live-views-total', formattedViews);
+        setEl('live-saves-zillow', formattedSaves);
+
+        // Funnel health — updates both Live Intel and Scoreboard
+        var health = (typeof calculateFunnelHealth === 'function') ? calculateFunnelHealth() : null;
         if (health) {
-            set('live-funnel-percentage', health.healthPercentage + '%');
-            set('live-funnel-status', health.statusText);
-            var bar = document.getElementById('live-funnel-bar');
-            if (bar) bar.style.width = health.healthPercentage + '%';
-            var warning = document.getElementById('live-funnel-warning');
-            if (warning && health.warningText) {
-                warning.textContent = health.warningText;
-                warning.classList.remove('hidden');
-            }
+            setEl('live-funnel-percentage', health.healthPercentage + '%');
+            setEl('live-funnel-status', health.statusText);
+            setEl('stat-funnel-percentage', health.healthPercentage + '%');
+            setEl('stat-funnel-status', health.statusText);
+
+            ['live-funnel-bar', 'stat-funnel-bar'].forEach(function(id) {
+                var bar = document.getElementById(id);
+                if (bar) bar.style.width = health.healthPercentage + '%';
+            });
+
+            ['live-funnel-warning', 'stat-funnel-warning'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el && health.warningText) {
+                    el.textContent = health.warningText;
+                    el.classList.remove('hidden');
+                }
+            });
         }
 
+        // Top Websites list
         var websitesList = document.getElementById('live-top-websites');
         if (websitesList && Array.isArray(stats.listTracTopWebsites)) {
             websitesList.innerHTML = stats.listTracTopWebsites.map(function(site) {
@@ -2326,6 +2333,7 @@ function refreshLiveIntelligence() {
             }).join('');
         }
 
+        // Top Cities list
         var citiesList = document.getElementById('live-top-cities');
         if (citiesList && Array.isArray(stats.listTracTopCities)) {
             citiesList.innerHTML = stats.listTracTopCities.map(function(city) {
@@ -2336,29 +2344,38 @@ function refreshLiveIntelligence() {
             }).join('');
         }
 
+        // BrokerBay Feedback Log — inject rows into #live-feedback-body
         var feedbackBody = document.getElementById('live-feedback-body');
-        if (feedbackBody && Array.isArray(propertyData.feedbackLog)) {
-            var count = propertyData.feedbackLog.length;
+        if (feedbackBody) {
+            var feedbackLog = propertyData.feedbackLog;
             var pill = document.getElementById('live-feedback-count-pill');
-            if (pill) pill.textContent = count + ' Total Entr' + (count === 1 ? 'y' : 'ies');
-            feedbackBody.innerHTML = '';
-            propertyData.feedbackLog.forEach(function(entry) {
-                var pillColor = entry.interest === 'Interested'
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : entry.interest === 'Not Interested'
-                        ? 'bg-red-100 text-red-700'
-                        : 'bg-slate-100 text-slate-600';
-                feedbackBody.insertAdjacentHTML('beforeend',
-                    '<tr class="hover:bg-slate-50 transition-colors">' +
-                    '<td class="px-8 py-5 text-sm font-bold text-slate-900 whitespace-nowrap">' + entry.date + '</td>' +
-                    '<td class="px-8 py-5"><span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ' + pillColor + '">' + entry.interest + '</span></td>' +
-                    '<td class="px-8 py-5 text-sm text-slate-600 leading-relaxed">' + entry.comments + '</td>' +
-                    '</tr>'
-                );
-            });
+
+            if (!Array.isArray(feedbackLog) || feedbackLog.length === 0) {
+                if (pill) pill.textContent = '0 Total Entries';
+                feedbackBody.innerHTML =
+                    '<tr><td colspan="3" class="px-8 py-10 text-center text-slate-400 italic text-sm">' +
+                    'Awaiting verified feedback.</td></tr>';
+            } else {
+                if (pill) pill.textContent = feedbackLog.length + ' Total Entr' + (feedbackLog.length === 1 ? 'y' : 'ies');
+                feedbackBody.innerHTML = '';
+                feedbackLog.forEach(function(entry) {
+                    var pillColor = entry.interest === 'Interested'
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : entry.interest === 'Not Interested'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-slate-100 text-slate-600';
+                    feedbackBody.insertAdjacentHTML('beforeend',
+                        '<tr class="hover:bg-slate-50 transition-colors">' +
+                        '<td class="px-8 py-5 text-sm font-bold text-slate-900 whitespace-nowrap">' + entry.date + '</td>' +
+                        '<td class="px-8 py-5"><span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ' + pillColor + '">' + entry.interest + '</span></td>' +
+                        '<td class="px-8 py-5 text-sm text-slate-600 leading-relaxed">' + entry.comments + '</td>' +
+                        '</tr>'
+                    );
+                });
+            }
         }
 
-        console.log('LIVE INTEL: refreshLiveIntelligence() complete.');
+        console.log('LIVE INTEL: refreshLiveIntelligence() complete. Showings=' + finalShowings);
     } catch (err) {
         console.error('LIVE INTEL: refreshLiveIntelligence() failed:', err);
     }
@@ -2379,7 +2396,6 @@ window.addEventListener('DOMContentLoaded', function() {
     try {
         populateReportingLinks();
         syncPitchReports();
-        syncDashboardStats();
         calculateOption3Totals();
         attachEventListeners();
         setupCarouselKeyboardNavigation();

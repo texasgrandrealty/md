@@ -382,235 +382,6 @@ def extract_top_cities(html, limit=5):
 def fetch_brokerbay_feedback():
     """
     Secure IMAP connection to Gmail to extract BrokerBay feedback emails.
-    Flexible search: Tries combined, then independent subject filtering if zero found.
-    Returns (feedback_count, feedback_log) where feedback_log is array of new findings.
-    """
-    print("  [INFO] Connecting to Gmail IMAP for BrokerBay feedback...")
-
-    # Check if BeautifulSoup is available
-    if BeautifulSoup is None:
-        print("  [WARN] BeautifulSoup not available - skipping BrokerBay feedback extraction")
-        return 0, []
-
-    # Get credentials from environment variables
-    email_address = os.getenv('REPORTING_EMAIL')
-    app_password = os.getenv('REPORTING_APP_PASSWORD')
-
-    if not email_address or not app_password:
-        print("  [ERROR] Missing email credentials - set REPORTING_EMAIL and REPORTING_APP_PASSWORD environment variables")
-        return 0, []
-
-    # IMAP and search logic
-    try:
-        mail = imaplib.IMAP4_SSL('imap.gmail.com')
-        mail.login(email_address, app_password)
-        mail.select('inbox')
-
-        property_address = "REPLACE_WITH_ADDRESS"  # e.g., "109 Kelli"  # Adjust for partial matching
-        feedback_searches = [
-            (f'(SUBJECT "Feedback Submitted" SUBJECT "{property_address}")', "combined"),
-            ('(SUBJECT "Feedback")', "feedback-only"),
-            (f'(SUBJECT "{property_address}")', "address-only"),
-        ]
-
-        # Try combined search first, then fall back
-        searched = False
-        message_ids = []
-        for search_query, mode in feedback_searches:
-            print(f"  [DEBUG] Attempting IMAP search mode: {mode} | Query: {search_query}")
-            status, messages = mail.search(None, search_query)
-            if status == 'OK':
-                message_ids = messages[0].split()
-                print(f"  [DEBUG] Search ({mode}): {len(message_ids)} email(s) found")
-                if message_ids:
-                    print(f"  [DEBUG] Using search mode '{mode}' (count: {len(message_ids)})")
-                    searched = True
-                    break
-                else:
-                    print(f"  [DEBUG] No emails found in '{mode}' search. Trying other patterns.")
-            else:
-                print(f"  [ERROR] IMAP search failed for mode '{mode}'")
-        
-        if not searched or not message_ids:
-            print("  [ERROR] No BrokerBay feedback emails found with any pattern")
-            mail.close()
-            mail.logout()
-            return 0, []
-
-        # Process the N most recent emails
-        feedback_log = []
-        msg_ids_to_process = list(reversed(message_ids))[:10]
-        print(f"  [DEBUG] Will process the {len(msg_ids_to_process)} most recent emails")
-
-        for idx, msg_id in enumerate(msg_ids_to_process):
-            try:
-                print(f"  [DEBUG] Fetching email #{idx+1}, ID={msg_id.decode() if hasattr(msg_id,'decode') else msg_id}")
-                status, msg_data = mail.fetch(msg_id, '(RFC822)')
-                if status != 'OK':
-                    print(f"  [WARN] Unable to fetch message ID {msg_id}: status {status}")
-                    continue
-
-                if not msg_data or not msg_data[0]:
-                    print(f"  [WARN] No data returned for message ID {msg_id}")
-                    continue
-
-                email_body = msg_data[0][1]
-                email_message = email.message_from_bytes(email_body)
-
-                # Date processing
-                email_date = email_message.get('Date', '')
-                if email_date:
-                    try:
-                        parsed_date = email.utils.parsedate_tz(email_date)
-                        if parsed_date:
-                            email_datetime = datetime.fromtimestamp(email.utils.mktime_tz(parsed_date))
-                            formatted_date = email_datetime.strftime('%m/%d/%Y')
-                        else:
-                            formatted_date = email_date[:10]  # Fallback
-                    except Exception as e:
-                        print(f"  [WARN] Date parse failed: {e}")
-                        formatted_date = email_date[:10]
-                else:
-                    formatted_date = 'Unknown'
-
-                # Find HTML content (prefer text/html but fallback to plain text if needed)
-                html_content = ""
-                if email_message.is_multipart():
-                    for part in email_message.walk():
-                        content_type = part.get_content_type()
-                        if content_type == "text/html":
-                            html_content = part.get_payload(decode=True).decode('utf-8', errors='ignore')
-                            print(f"  [DEBUG] Found HTML content ({len(html_content)} chars) for email #{idx+1}")
-                            break
-                        elif content_type == "text/plain" and not html_content:
-                            html_content = part.get_payload(decode=True).decode('utf-8', errors='ignore')
-                else:
-                    content_type = email_message.get_content_type()
-                    if content_type == "text/html":
-                        html_content = email_message.get_payload(decode=True).decode('utf-8', errors='ignore')
-                    elif content_type == "text/plain":
-                        html_content = email_message.get_payload(decode=True).decode('utf-8', errors='ignore')
-
-                if not html_content:
-                    print(f"  [WARN] No HTML or plain text found on message ID {msg_id}; skipping")
-                    continue
-
-                feedback_data = parse_brokerbay_html(html_content, formatted_date)
-                if feedback_data:
-                    print(f"  [DEBUG] Parsed feedback: {feedback_data}")
-                    feedback_log.append(feedback_data)
-                else:
-                    print(f"  [DEBUG] Skipped email #{idx+1} (no feedback detected)")
-
-            except Exception as e:
-                print(f"  [ERROR] Error parsing email ID {msg_id}: {e}")
-
-        mail.close()
-        mail.logout()
-
-        print(f"  [DEBUG] Final extracted feedback entry count: {len(feedback_log)}")
-        return len(feedback_log), feedback_log
-
-    except Exception as e:
-        print(f"  [ERROR] Gmail IMAP connection failed: {e}")
-        return 0, []
-
-def parse_brokerbay_html(html_content, email_date):
-    """
-    Parse BrokerBay HTML email to extract feedback data robustly.
-    Attempts both direct and table-based extraction, with detailed debug output.
-    Returns dict with {date, interest, comments} or None if parsing fails.
-    """
-    try:
-        soup = BeautifulSoup(html_content, 'html.parser')
-
-        # Try direct bulldozer text pattern first
-        plain_text = soup.get_text(separator='\n')
-        interest_level = None
-        comments = None
-
-        # Try specific table-based extraction first (BrokerBay embeds feedback in tables)
-        possible_interest_labels = ['Interest Level', 'Interest', 'Interest:', 'Interest Level:', 'Interested', 'InterestLevel']
-        possible_comment_labels = ['Agent Comments', 'Agent Feedback', 'Additional Comments', 'Comments', 'Feedback']
-
-        # Look for explicit feedback table structure
-        found_interest, found_comments = None, None
-        # Find all tables just in case
-        tables = soup.find_all(['table'])
-        for t_idx, table in enumerate(tables):
-            rows = table.find_all(['tr'])
-            for r_idx, row in enumerate(rows):
-                cells = row.find_all(['td', 'th'])
-                if len(cells) < 2:
-                    continue
-                key = cells[0].get_text(strip=True)
-                value = cells[1].get_text(" ", strip=True)
-                # Debug print for table row context
-                print(f"    [BROKERBAY TABLE DEBUG] Row[{t_idx}:{r_idx}] Key='{key}' Value='{value}'")
-                # Check for Interest/Comments
-                for interest_label in possible_interest_labels:
-                    if interest_label.lower() in key.lower():
-                        found_interest = value.strip()
-                for comment_label in possible_comment_labels:
-                    if comment_label.lower() in key.lower():
-                        found_comments = value.strip()
-            # If both found, break out
-            if found_interest and found_comments:
-                break
-
-        if not found_interest:
-            # Fall back to regex on plain text
-            interest_patterns = [
-                r'Interest\s*Level[:\-]?\s*(Yes|No|Maybe)',
-                r'Interest[:\-]?\s*(Yes|No|Maybe)',
-                r'Interested[:\-]?\s*(Yes|No|Maybe)',
-                r'(Yes|No|Maybe)\s*interest',
-                r'(Yes|No|Maybe)'
-            ]
-            for pattern in interest_patterns:
-                match = re.search(pattern, plain_text, re.IGNORECASE)
-                if match:
-                    found_interest = match.group(1).title()
-                    print(f"    [BROKERBAY FALLBACK DEBUG] Interest found by regex: '{found_interest}'")
-                    break
-
-        if not found_comments:
-            # Fallback: look for comment patterns in plain text, prefer multi-line capture
-            comment_patterns = [
-                r'(?:Agent\s+)?Comments?[:\-]?\s*([\S][^\n\r]{5,})',
-                r'Feedback[:\-]?\s*([\S][^\n\r]{5,})',
-                r'Notes?[:\-]?\s*([\S][^\n\r]{5,})',
-            ]
-            for pattern in comment_patterns:
-                match = re.search(pattern, plain_text, re.IGNORECASE)
-                if match:
-                    found_comments = match.group(1).strip()
-                    print(f"    [BROKERBAY FALLBACK DEBUG] Comments found by regex: '{found_comments}'")
-                    break
-
-        # Final fallback defaults
-        if not found_interest:
-            found_interest = "Unknown"
-        if not found_comments:
-            found_comments = "No comments provided"
-        else:
-            # Clean comments
-            found_comments = re.sub(r'[\s ]+', ' ', found_comments).strip()[:200]
-
-        # Debug output
-        print(f"    [BROKERBAY RESULT] INTEREST='{found_interest}' | COMMENTS='{found_comments}'")
-
-        return {
-            'date': email_date,
-            'interest': found_interest,
-            'comments': found_comments
-        }
-
-    except Exception as e:
-        print(f"  [DEBUG] Error parsing BrokerBay HTML: {e}")
-def fetch_brokerbay_feedback():
-    """
-    Secure IMAP connection to Gmail to extract BrokerBay feedback emails.
     Flexible: Search only for SUBJECT "Feedback Submitted", then filter for property locally.
     Overwrites feedbackLog with most recent matching feedback entries.
     Returns (feedback_count, feedback_log).
@@ -1074,17 +845,22 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
     if content != old_content:
         print(f"    -> listTracTopCities: {len(top_cities)} entries")
     
-    # Update BrokerBay Showings (brokerBayShowings inside syndicationStats) — floor of 1, never zero
-    brokerbay_count = max(int(brokerbay_count or 0), 1)
-    old_content = content
-    content = re.sub(
-        r'(syndicationStats:\s*\{[\s\S]*?brokerBayShowings:\s*)\d+',
-        f'\\g<1>{brokerbay_count}',
-        content,
-        flags=re.DOTALL
-    )
-    if content != old_content:
-        print(f"    -> brokerBayShowings: {brokerbay_count}")
+    # Update BrokerBay Showings — exact string replacement to prevent zeroing out
+    brokerbay_count = int(brokerbay_count)
+    if brokerbay_count < 1:
+        brokerbay_count = 1
+        print(f"    -> brokerBayShowings: FLOOR ENFORCED to 1 (was {brokerbay_count})")
+    existing_match = re.search(r'brokerBayShowings:\s*(\d+)', content)
+    if existing_match:
+        existing_val = int(existing_match.group(1))
+        exact_old = existing_match.group(0)
+        exact_new = f'brokerBayShowings: {brokerbay_count}'
+        old_content = content
+        content = content.replace(exact_old, exact_new, 1)
+        if content != old_content:
+            print(f"    -> brokerBayShowings: {existing_val} -> {brokerbay_count} (exact replacement)")
+    else:
+        print(f"    -> brokerBayShowings: field not found in data.js (skipping)")
     
     # Add/Update Feedback Log (feedbackLog) - Add to propertyData if not exists
     if brokerbay_feedback is not None:
@@ -1132,6 +908,21 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
 # MAIN EXECUTION
 # ============================================================================
 
+def read_existing_brokerbay_count():
+    """Read the current brokerBayShowings value from data.js to preserve it when fetch fails."""
+    try:
+        with open(DATA_JS_PATH, 'r', encoding='utf-8') as f:
+            content = f.read()
+        match = re.search(r'brokerBayShowings:\s*(\d+)', content)
+        if match:
+            val = int(match.group(1))
+            print(f"  [DEBUG] Existing brokerBayShowings in data.js: {val}")
+            return val
+    except Exception as e:
+        print(f"  [WARN] Could not read existing brokerBayShowings: {e}")
+    return 1
+
+
 def main():
     print("Starting Sync for Property (Hybrid Strategy + BrokerBay Integration)...")
     print("=" * 60)
@@ -1155,7 +946,24 @@ def main():
     # Step 3: Fetch BrokerBay Feedback Intelligence
     print("\n  --- BROKERBAY FEEDBACK EXTRACTION ---")
     brokerbay_count, brokerbay_feedback = fetch_brokerbay_feedback()
-    brokerbay_count = max(int(brokerbay_count or 0), 1)
+
+    scraped_count = int(brokerbay_count or 0)
+    existing_count = read_existing_brokerbay_count()
+
+    # LOCK: If fetch returned 0, preserve the existing data.js value.
+    # If data.js is also 0 or empty, force to 1 — never allow zero showings.
+    if scraped_count == 0:
+        print(f"  [WARN] Fetch returned 0 showings — falling back to existing data.js value ({existing_count})")
+        brokerbay_count = existing_count
+    else:
+        brokerbay_count = scraped_count
+
+    if brokerbay_count < 1:
+        print(f"  [WARN] Both fetch and data.js are 0 — forcing brokerBayShowings to 1")
+        brokerbay_count = 1
+
+    print(f"  [INFO] Smart Sync floor: brokerBayShowings = {brokerbay_count} "
+          f"(scraped={scraped_count}, existing={existing_count}, floor=1)")
     
     print("=" * 60)
     
