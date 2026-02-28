@@ -1377,10 +1377,8 @@ function showTab(tabId, navButtonEl) {
 
     console.log("Switching to tab:", actualId, "(from:", tabId, ")");
     
-    // Hide all tab pages
-    document.querySelectorAll('main > div[id^="tab-"], main > div[id^="page-"]').forEach(t => {
-        t.classList.add('hidden');
-    });
+    // Hide all tab pages (scoped strictly to main, excludes global scoreboard above main)
+    document.querySelectorAll('main > div[id^="tab-"]').forEach(t => t.classList.add('hidden'));
     
     // Show target page
     const target = document.getElementById(`tab-${actualId}`) || document.getElementById(`page-${actualId}`);
