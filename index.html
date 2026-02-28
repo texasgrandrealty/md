@@ -305,6 +305,30 @@
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen">
+    <script>
+      window.forceTab = function(id) {
+          console.log("Nuclear Override: Showing", id);
+          // Hide every single div in the main container
+          document.querySelectorAll('main > div').forEach(div => {
+              div.setAttribute('style', 'display: none !important');
+              div.classList.add('hidden');
+          });
+          // Force show the target
+          const target = document.getElementById('tab-' + id);
+          if (target) {
+              target.setAttribute('style', 'display: block !important');
+              target.classList.remove('hidden');
+              window.scrollTo(0,0);
+          }
+      };
+      // Attach to all nav buttons immediately
+      document.addEventListener('DOMContentLoaded', () => {
+          document.querySelectorAll('.nav-btn').forEach(btn => {
+              const tabId = btn.id.replace('nav-', '');
+              btn.setAttribute('onclick', `forceTab('${tabId}')`);
+          });
+      });
+    </script>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
