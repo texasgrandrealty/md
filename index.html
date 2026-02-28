@@ -305,30 +305,6 @@
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen">
-    <script>
-      window.forceTab = function(id) {
-          console.log("Nuclear Override: Showing", id);
-          // Hide every single div in the main container
-          document.querySelectorAll('main > div').forEach(div => {
-              div.setAttribute('style', 'display: none !important');
-              div.classList.add('hidden');
-          });
-          // Force show the target
-          const target = document.getElementById('tab-' + id);
-          if (target) {
-              target.setAttribute('style', 'display: block !important');
-              target.classList.remove('hidden');
-              window.scrollTo(0,0);
-          }
-      };
-      // Attach to all nav buttons immediately
-      document.addEventListener('DOMContentLoaded', () => {
-          document.querySelectorAll('.nav-btn').forEach(btn => {
-              const tabId = btn.id.replace('nav-', '');
-              btn.setAttribute('onclick', `forceTab('${tabId}')`);
-          });
-      });
-    </script>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
@@ -1690,7 +1666,8 @@
                     <p class="text-slate-600 text-sm mt-3">Contact us for marketing strategy consultation</p>
                 </div>
             </div>
-            <!-- END #tab-campaign (must close before #tab-live-intel) -->
+        </div>
+        <!-- END #tab-campaign (must close before #tab-live-intel) -->
             <!-- 8. LIVE INTELLIGENCE TAB -->
             <div id="tab-live-intel" class="py-8 md:py-12 hidden">
                 <div class="max-w-7xl mx-auto px-6 sm:px-8">
