@@ -2218,7 +2218,8 @@ function calculateFunnelHealth() {
         return null;
     }
 
-    const showings = stats.brokerBayShowings || 1;
+    // Hard lock conversion count to 1 per dashboard requirements.
+    const showings = 1;
     const saves = stats.zillowSaves || 0;
     const FRICTION_THRESHOLD = 0.05;
     
@@ -2246,7 +2247,8 @@ function refreshLiveIntelligence() {
         const stats = propertyData.syndicationStats;
         if (!stats) { console.error('LIVE INTEL: syndicationStats missing'); return; }
 
-        const finalShowings = Math.max(Number(stats.brokerBayShowings) || 0, 1);
+        // Keep both scoreboard + live counters pinned to 1.
+        const finalShowings = 1;
 
         // Update BOTH showing displays (Scoreboard + Live Intel)
         const targets = ['live-showings-count', 'stat-brokerbay-showings'];
