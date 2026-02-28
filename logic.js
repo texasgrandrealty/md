@@ -1363,54 +1363,23 @@ function attachEventListeners() {
 }
 
 function showTab(tabId, navButtonEl) {
-    if (!tabId) return;
-    
-    // Handle ID aliases
-    let actualId = tabId;
-    if (tabId === 'incentives' || tabId === 'options') {
-        actualId = 'options';
-    }
-    // Handle legacy metrics/roadmap references - both now point to strategy-metrics
-    if (tabId === 'metrics' || tabId === 'roadmap') {
-        actualId = 'strategy-metrics';
-    }
-
-    console.log("Switching to tab:", actualId, "(from:", tabId, ")");
-    
-    // Hide all tab pages (scoped strictly to main, excludes global scoreboard above main)
-    document.querySelectorAll('main > div[id^="tab-"]').forEach(t => t.classList.add('hidden'));
-    
-    // Show target page
-    const target = document.getElementById(`tab-${actualId}`) || document.getElementById(`page-${actualId}`);
-    if (target) {
-        target.classList.remove('hidden');
-    } else {
-        console.error("Target page not found:", actualId);
-        return;
-    }
-    
-    // Update nav button active state
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('active');
+    console.log("Switching to:", tabId);
+    // Hide EVERY possible tab container using a global selector
+    const allTabs = document.querySelectorAll('[id^="tab-"], [id^="page-"]');
+    allTabs.forEach(t => {
+        t.style.display = 'none';
+        t.classList.add('hidden');
     });
-    
-    const activeBtn = navButtonEl || document.getElementById(`nav-${tabId}`);
-    if (activeBtn) {
-        activeBtn.classList.add('active');
+    // Show target by ID and force display block
+    const target = document.getElementById('tab-' + tabId) || document.getElementById('page-' + tabId);
+    if (target) {
+        target.style.display = 'block';
+        target.classList.remove('hidden');
     }
-
-    // Auto-fill data when options/incentives tab is selected
-    if (actualId === 'options' && typeof populateOptions === 'function') {
-        populateOptions();
-    }
-    
-    // Initialize charts for strategy-metrics/summary tabs
-    if ((actualId === 'strategy-metrics' || actualId === 'summary') && typeof initCharts === 'function') {
-        setTimeout(initCharts, 50);
-    }
-    
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Update nav buttons
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    if (navButtonEl) navButtonEl.classList.add('active');
+    window.scrollTo(0,0);
 }
 
 function showIncentiveSubTab(tabId, buttonEl) {
