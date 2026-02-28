@@ -846,10 +846,10 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
         print(f"    -> listTracTopCities: {len(top_cities)} entries")
     
     # Update BrokerBay Showings — exact string replacement to prevent zeroing out
-    brokerbay_count = int(brokerbay_count)
-    if brokerbay_count < 1:
-        brokerbay_count = 1
-        print(f"    -> brokerBayShowings: FLOOR ENFORCED to 1 (was {brokerbay_count})")
+    raw_brokerbay_count = int(brokerbay_count or 0)
+    brokerbay_count = max(raw_brokerbay_count, 1)
+    if brokerbay_count != raw_brokerbay_count:
+        print(f"    -> brokerBayShowings: FLOOR ENFORCED to 1 (was {raw_brokerbay_count})")
     existing_match = re.search(r'brokerBayShowings:\s*(\d+)', content)
     if existing_match:
         existing_val = int(existing_match.group(1))
@@ -916,8 +916,11 @@ def read_existing_brokerbay_count():
         match = re.search(r'brokerBayShowings:\s*(\d+)', content)
         if match:
             val = int(match.group(1))
-            print(f"  [DEBUG] Existing brokerBayShowings in data.js: {val}")
-            return val
+            floored_val = max(val, 1)
+            if floored_val != val:
+                print("  [WARN] Existing brokerBayShowings was 0 — applying floor to 1")
+            print(f"  [DEBUG] Existing brokerBayShowings in data.js: {floored_val}")
+            return floored_val
     except Exception as e:
         print(f"  [WARN] Could not read existing brokerBayShowings: {e}")
     return 1
@@ -958,6 +961,7 @@ def main():
     else:
         brokerbay_count = scraped_count
 
+    brokerbay_count = int(brokerbay_count or 0)
     if brokerbay_count < 1:
         print(f"  [WARN] Both fetch and data.js are 0 — forcing brokerBayShowings to 1")
         brokerbay_count = 1

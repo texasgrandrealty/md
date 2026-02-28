@@ -101,6 +101,7 @@ const propertyData = {
         matterportWalkthroughs: 0,
         
         // Bottom Funnel: Conversion (MANUAL entry)
+        // Locked floor: never allow this to persist as 0
         brokerBayShowings: 1,
         mlsReverseProspectMatches: 0,
 

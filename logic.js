@@ -1363,17 +1363,16 @@ function attachEventListeners() {
 }
 
 function showTab(tabId, navButtonEl) {
-    console.log("Switching to:", tabId);
-    // Hide EVERY possible tab container using a global selector
-    const allTabs = document.querySelectorAll('[id^="tab-"], [id^="page-"]');
-    allTabs.forEach(t => {
-        t.style.display = 'none';
-        t.classList.add('hidden');
+    console.log("Forcing Tab:", tabId);
+    // Hide all with highest priority
+    document.querySelectorAll('main > div').forEach(div => {
+        div.style.setProperty('display', 'none', 'important');
+        div.classList.add('hidden');
     });
-    // Show target by ID and force display block
-    const target = document.getElementById('tab-' + tabId) || document.getElementById('page-' + tabId);
+    // Show target with highest priority
+    const target = document.getElementById('tab-' + tabId);
     if (target) {
-        target.style.display = 'block';
+        target.style.setProperty('display', 'block', 'important');
         target.classList.remove('hidden');
     }
     // Update nav buttons
