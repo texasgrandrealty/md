@@ -1364,10 +1364,18 @@ function attachEventListeners() {
 
 function showTab(tabId, navButtonEl) {
     console.log("Forcing Tab:", tabId);
-    // Hide all with highest priority
-    document.querySelectorAll('main > div').forEach(div => {
-        div.style.setProperty('display', 'none', 'important');
-        div.classList.add('hidden');
+    const ALL_TABS = [
+        'summary', 'property', 'local', 'strategy-metrics', 'comps',
+        'rpr', 'liquidity', 'campaign', 'live-intel', 'rates',
+        'options', 'decision-path', 'documents', 'search-properties'
+    ];
+    // Explicitly hide every known main content tab
+    ALL_TABS.forEach(id => {
+        const el = document.getElementById('tab-' + id);
+        if (el) {
+            el.style.setProperty('display', 'none', 'important');
+            el.classList.add('hidden');
+        }
     });
     // Show target with highest priority
     const target = document.getElementById('tab-' + tabId);
