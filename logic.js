@@ -2387,7 +2387,7 @@ window.addEventListener('DOMContentLoaded', function() {
             } catch (chartError) {
                 console.error('Chart initialization failed (non-blocking):', chartError);
             }
-        }, 100);
+        }, 500);
 
         showCompSubTab('neighborhood');
         showTab('summary');
