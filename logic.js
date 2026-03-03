@@ -602,6 +602,17 @@ function initLocalOutcomesChart() {
 }
 
 function initCharts() {
+    const REQUIRED_CANVASES = [
+        'pricingStrategyChart', 'cdomComparisonChart', 'liquidityVelocityChart',
+        'localSupplyChartSubject', 'localSupplyChartMacro', 'localOutcomesChart',
+        'rateImpactChart', 'marketHealthChart'
+    ];
+    REQUIRED_CANVASES.forEach(function(id) {
+        if (!document.getElementById(id)) {
+            console.error(`initCharts: Canvas element #${id} not found — chart will be skipped.`);
+        }
+    });
+
     try {
         updateSellerScarcityInsights();
 
@@ -2387,7 +2398,7 @@ window.addEventListener('DOMContentLoaded', function() {
             } catch (chartError) {
                 console.error('Chart initialization failed (non-blocking):', chartError);
             }
-        }, 500);
+        }, 1000);
 
         showCompSubTab('neighborhood');
         showTab('summary');
