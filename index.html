@@ -1,4 +1,4 @@
-﻿<!--
+<!--
   2026 EXECUTIVE DASHBOARD - MASTER TEMPLATE (Protocol 000.002.001)
   
   SINGLE SOURCE OF TRUTH: propertyData object powers all 14 tabs dynamically.
@@ -307,25 +307,28 @@
 <body class="bg-gray-50 text-gray-800 min-h-screen">
     <script>
       window.forceTab = function(id) {
-          console.log("Nuclear Override: Showing", id);
-          // Hide every single div in the main container
-          document.querySelectorAll('main > div').forEach(div => {
-              div.setAttribute('style', 'display: none !important');
-              div.classList.add('hidden');
-          });
-          // Force show the target
-          const target = document.getElementById('tab-' + id);
-          if (target) {
-              target.setAttribute('style', 'display: block !important');
-              target.classList.remove('hidden');
-              window.scrollTo(0,0);
+          // Delegate to showTab which handles charts, options, and nav state
+          if (typeof showTab === 'function') {
+              showTab(id);
+          } else {
+              console.log("Nuclear Override: Showing", id);
+              document.querySelectorAll('main > div').forEach(div => {
+                  div.setAttribute('style', 'display: none !important');
+                  div.classList.add('hidden');
+              });
+              const target = document.getElementById('tab-' + id);
+              if (target) {
+                  target.setAttribute('style', 'display: block !important');
+                  target.classList.remove('hidden');
+                  window.scrollTo(0,0);
+              }
           }
       };
       // Attach to all nav buttons immediately
       document.addEventListener('DOMContentLoaded', () => {
           document.querySelectorAll('.nav-btn').forEach(btn => {
               const tabId = btn.id.replace('nav-', '');
-              btn.setAttribute('onclick', `forceTab('${tabId}')`);
+              btn.setAttribute('onclick', `showTab('${tabId}', this)`);
           });
       });
     </script>
@@ -406,6 +409,33 @@
                             <div class="nav-shadow nav-shadow-right"></div>
                         </div>
                     </nav>
+                </div>
+            </div>
+            <!-- FUNNEL PERFORMANCE SCOREBOARD — Slim Banner inside header -->
+            <div class="relative z-10 px-4 sm:px-6 lg:px-8 pb-3 border-t border-slate-200/70 mt-1">
+                <div class="flex flex-wrap items-center gap-x-6 gap-y-1 py-2">
+                    <span class="text-emerald-500 text-sm">&#128202;</span>
+                    <span class="text-[0.6rem] font-black uppercase tracking-[0.18em] text-slate-500">Funnel:</span>
+                    <div class="flex items-center gap-1">
+                        <span class="text-[0.6rem] font-black text-blue-500 uppercase tracking-widest">Views</span>
+                        <span id="stat-listtrac-views" class="text-sm font-black text-slate-900">--</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span class="text-[0.6rem] font-black text-yellow-500 uppercase tracking-widest">Saves</span>
+                        <span id="stat-zillow-saves" class="text-sm font-black text-slate-900">--</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span class="text-[0.6rem] font-black text-emerald-500 uppercase tracking-widest">Showings</span>
+                        <span id="stat-brokerbay-showings" class="text-sm font-black text-slate-900">1</span>
+                    </div>
+                    <div class="flex items-center gap-2 ml-auto">
+                        <p id="stat-funnel-status" class="text-[0.6rem] text-slate-400 hidden md:block">Calculating...</p>
+                        <span id="stat-funnel-percentage" class="text-sm font-black text-blue-600">--%</span>
+                        <div class="w-24 bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                            <div id="stat-funnel-bar" class="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full transition-all duration-700" style="width: 0%"></div>
+                        </div>
+                        <p id="stat-funnel-warning" class="text-[0.6rem] font-semibold text-yellow-500 hidden"></p>
+                    </div>
                 </div>
             </div>
         </header>

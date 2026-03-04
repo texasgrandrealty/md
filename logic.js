@@ -443,8 +443,10 @@ function populateOptions() {
     let additionalProfit = grandTotal - propertyData.price;
 
     // BRUTE FORCE THE INJECTION: Use innerHTML to force values to screen
-    document.getElementById('total-revenue-after-balloon-value').innerHTML = currencyFormat.format(grandTotal);
-    document.getElementById('seller-premium-value').innerHTML = currencyFormat.format(additionalProfit);
+    const balEl = document.getElementById('total-revenue-after-balloon-value');
+    if (balEl) balEl.innerHTML = currencyFormat.format(grandTotal);
+    const premEl = document.getElementById('seller-premium-value');
+    if (premEl) premEl.innerHTML = currencyFormat.format(additionalProfit);
 
     // Inject Option 1 results
     const opt1MonthlyPayment = option1Payment ?? 0;
@@ -519,11 +521,14 @@ function populateOptions() {
     if (opt3Summary) opt3Summary.textContent = currencyFormat.format(option3Payment ?? 0);
 
     // FINAL SYNC: Inject Monthly P&I Payment
-    document.getElementById('owner-finance-payment').innerHTML = currencyFormat.format(option3Payment);
+    const ofPayEl = document.getElementById('owner-finance-payment');
+    if (ofPayEl) ofPayEl.innerHTML = currencyFormat.format(option3Payment);
 
     // FINAL SYNC: Ensure all Seller Finance values are injected
-    document.getElementById('total-revenue-after-balloon-value').innerHTML = currencyFormat.format(option3TotalRevenue + option3RemainingBalance);
-    document.getElementById('seller-premium-value').innerHTML = currencyFormat.format((option3TotalRevenue + option3RemainingBalance) - propertyData.price);
+    const balEl2 = document.getElementById('total-revenue-after-balloon-value');
+    if (balEl2) balEl2.innerHTML = currencyFormat.format(option3TotalRevenue + option3RemainingBalance);
+    const premEl2 = document.getElementById('seller-premium-value');
+    if (premEl2) premEl2.innerHTML = currencyFormat.format((option3TotalRevenue + option3RemainingBalance) - propertyData.price);
 }
 
 // --- CHART FUNCTIONS ---
@@ -1363,22 +1368,58 @@ function attachEventListeners() {
 }
 
 function showTab(tabId, navButtonEl) {
-    console.log("Forcing Tab:", tabId);
-    // Hide all with highest priority
-    document.querySelectorAll('main > div').forEach(div => {
-        div.style.setProperty('display', 'none', 'important');
-        div.classList.add('hidden');
-    });
-    // Show target with highest priority
-    const target = document.getElementById('tab-' + tabId);
-    if (target) {
-        target.style.setProperty('display', 'block', 'important');
-        target.classList.remove('hidden');
+    if (!tabId) return;
+    
+    // Handle ID aliases
+    let actualId = tabId;
+    if (tabId === 'incentives' || tabId === 'options') {
+        actualId = 'options';
     }
-    // Update nav buttons
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    if (navButtonEl) navButtonEl.classList.add('active');
-    window.scrollTo(0,0);
+    // Handle legacy metrics/roadmap references - both now point to strategy-metrics
+    if (tabId === 'metrics' || tabId === 'roadmap') {
+        actualId = 'strategy-metrics';
+    }
+
+    console.log("Switching to tab:", actualId, "(from:", tabId, ")");
+    
+    // Hide all tab pages (clear inline styles too)
+    document.querySelectorAll('main > div[id^="tab-"], main > div[id^="page-"]').forEach(t => {
+        t.style.removeProperty('display');
+        t.classList.add('hidden');
+    });
+    
+    // Show target page
+    const target = document.getElementById(`tab-${actualId}`) || document.getElementById(`page-${actualId}`);
+    if (target) {
+        target.style.removeProperty('display');
+        target.classList.remove('hidden');
+    } else {
+        console.error("Target page not found:", actualId);
+        return;
+    }
+    
+    // Update nav button active state
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    const activeBtn = navButtonEl || document.getElementById(`nav-${tabId}`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+
+    // Auto-fill data when options/incentives tab is selected
+    if (actualId === 'options' && typeof populateOptions === 'function') {
+        populateOptions();
+    }
+    
+    // Initialize charts for strategy-metrics/summary/local/liquidity tabs
+    if ((actualId === 'strategy-metrics' || actualId === 'summary' || actualId === 'local' || actualId === 'liquidity') && typeof initCharts === 'function') {
+        setTimeout(initCharts, 50);
+    }
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function showIncentiveSubTab(tabId, buttonEl) {
