@@ -2413,22 +2413,20 @@ window.onload = function() {
         injectDynamicData();
         populatePropertyData();
         populateReportingLinks();
-        syncPitchReports(); // Added to match your previous setup
+        syncPitchReports();
         calculateOption3Totals();
         attachEventListeners();
-        setupCarouselKeyboardNavigation(); // Added to match your previous setup
+        setupCarouselKeyboardNavigation();
         populateAllCompTables();
         populateOptions();
         populateAmortizationTable();
         populateCompleteAmortizationTable(); 
         
-        // Give the browser 100ms to render the HTML containers before injecting charts
         setTimeout(initCharts, 100);
         
         showCompSubTab('neighborhood'); 
         showTab('summary');
         
-        // Final deferred injection for live stats
         setTimeout(refreshLiveIntelligence, 1000);
         
         console.log('✅ Dashboard initialization complete');
