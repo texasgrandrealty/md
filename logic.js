@@ -2434,13 +2434,4 @@ window.onload = function() {
         console.error('❌ Error during initialization:', error);
     }
 };
-
-function scrollNav(direction) {
-    const container = document.getElementById('nav-tabs-container');
-    if (!container) return;
-    const amount = 250;
-    container.scrollBy({ 
-        left: direction === 'left' ? -amount : amount, 
-        behavior: 'smooth' 
-    });
-}// Sync Force: March 4 2026
+// Sync Force: March 4 2026
