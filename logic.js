@@ -341,6 +341,15 @@ function calculateRemainingBalance(principal, annualRate, monthlyPayment, paymen
 }
 
 // --- CALCULATE ALL OPTION PAYMENTS AND VALUES ---
+// These constants are pulled directly from propertyData to prevent ReferenceErrors
+const SUBJECT_PRICE = propertyData.price;
+const SUBJECT_DP_PCT = propertyData.downPaymentPct;
+const MARKET_RATE = propertyData.marketRate;
+const PRICE_FLOOR_OPTION_1 = propertyData.priceFloor;
+const BUYDOWN_PRICE_OPTION_2 = propertyData.price;
+const OWNER_FINANCE_RATE = propertyData.ownerFinanceRate;
+const OWNER_FINANCE_DP_PCT = propertyData.ownerFinanceDownPct;
+const TOTAL_CDOM = propertyData.cdom;
 
 // Option 1: Price Strategy
 const option1Principal = roundCurrency(PRICE_FLOOR_OPTION_1 * (1 - SUBJECT_DP_PCT));
@@ -353,7 +362,7 @@ const option2PaymentYear2 = calculateMonthlyPayment(option2Principal, BUYDOWNS.R
 const option2PaymentYear3 = calculateMonthlyPayment(option2Principal, BUYDOWNS.RATES[2], 30);
 const option2PaymentYear4 = calculateMonthlyPayment(option2Principal, BUYDOWNS.RATES[3], 30);
 
-// Option 3: Owner Finance (calculated from amortization schedule)
+// Option 3: Owner Finance
 const option3DownPayment = roundCurrency(SUBJECT_PRICE * OWNER_FINANCE_DP_PCT);
 const option3Principal = roundCurrency(SUBJECT_PRICE - option3DownPayment);
 const option3Payment = calculateMonthlyPayment(option3Principal, OWNER_FINANCE_RATE, 30);
@@ -603,13 +612,13 @@ function initLocalOutcomesChart() {
 
 function initCharts() {
     const REQUIRED_CANVASES = [
-        'pricingStrategyChart', 'cdomComparisonChart', 'liquidityVelocityChart',
+        'pricingStrategyChart', 'liquidityVelocityChart',
         'localSupplyChartSubject', 'localSupplyChartMacro', 'localOutcomesChart',
-        'rateImpactChart', 'marketHealthChart'
+        'rateChart', 'marketHealthChart'
     ];
     REQUIRED_CANVASES.forEach(function(id) {
         if (!document.getElementById(id)) {
-            console.error(`initCharts: Canvas element #${id} not found — chart will be skipped.`);
+            console.warn(`initCharts: Canvas element #${id} not found — chart will be skipped.`);
         }
     });
 
@@ -2369,46 +2378,33 @@ function refreshLiveIntelligence() {
 }
 
 // --- MASTER INITIALIZATION ---
-window.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Dashboard initialization started');
-
+window.onload = function() {
     try {
+        console.log('🚀 Initializing Executive Dashboard...');
         detectPropertyUnit();
         injectDynamicData();
         populatePropertyData();
-    } catch (err) {
-        console.error('Phase 1 (core data injection) failed:', err);
-    }
-
-    try {
         populateReportingLinks();
-        syncPitchReports();
+        syncPitchReports(); // Added to match your previous setup
         calculateOption3Totals();
         attachEventListeners();
-        setupCarouselKeyboardNavigation();
+        setupCarouselKeyboardNavigation(); // Added to match your previous setup
         populateAllCompTables();
         populateOptions();
         populateAmortizationTable();
-        populateCompleteAmortizationTable();
-
-        setTimeout(function() {
-            try {
-                initCharts();
-                console.log('✅ Charts initialized');
-            } catch (chartError) {
-                console.error('Chart initialization failed (non-blocking):', chartError);
-            }
-        }, 1000);
-
-        showCompSubTab('neighborhood');
+        populateCompleteAmortizationTable(); 
+        
+        // Give the browser 100ms to render the HTML containers before injecting charts
+        setTimeout(initCharts, 100);
+        
+        showCompSubTab('neighborhood'); 
         showTab('summary');
-    } catch (err) {
-        console.error('Phase 2 (deferred initialization) failed:', err);
+        
+        // Final deferred injection for live stats
+        setTimeout(refreshLiveIntelligence, 1000);
+        
+        console.log('✅ Dashboard initialization complete');
+    } catch (error) {
+        console.error('❌ Error during initialization:', error);
     }
-
-    console.log('✅ Dashboard initialization complete');
-
-    setTimeout(function() {
-        refreshLiveIntelligence();
-    }, 2000);
-});
+};
