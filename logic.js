@@ -1384,58 +1384,28 @@ function attachEventListeners() {
     console.log("Event listeners attached successfully");
 }
 
-function showTab(tabId, navButtonEl) {
+window.showTab = function(tabId, navButtonEl) {
     if (!tabId) return;
-
-    // Handle ID aliases
     let actualId = tabId;
-    if (tabId === 'incentives' || tabId === 'options') {
-        actualId = 'options';
-    }
-    // Handle legacy metrics/roadmap references - both now point to strategy-metrics
-    if (tabId === 'metrics' || tabId === 'roadmap') {
-        actualId = 'strategy-metrics';
-    }
+    if (tabId === 'incentives' || tabId === 'options') actualId = 'options';
+    if (tabId === 'metrics' || tabId === 'roadmap') actualId = 'strategy-metrics';
 
-    console.log("Switching to tab:", actualId, "(from:", tabId, ")");
-
-    // Hide all tab pages
     document.querySelectorAll('main > div[id^="tab-"], main > div[id^="page-"]').forEach(t => {
         t.classList.add('hidden');
     });
 
-    // Show target page
     const target = document.getElementById(`tab-${actualId}`) || document.getElementById(`page-${actualId}`);
-    if (target) {
-        target.classList.remove('hidden');
-    } else {
-        console.error("Target page not found:", actualId);
-        return;
-    }
+    if (target) target.classList.remove('hidden');
 
-    // Update nav button active state
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    if (navButtonEl) navButtonEl.classList.add('active');
 
-    const activeBtn = navButtonEl || document.getElementById(`nav-${tabId}`);
-    if (activeBtn) {
-        activeBtn.classList.add('active');
-    }
-
-    // Auto-fill data when options/incentives tab is selected
-    if (actualId === 'options' && typeof populateOptions === 'function') {
-        populateOptions();
-    }
-
-    // Initialize charts for strategy-metrics/summary/options tabs
-    if ((actualId === 'strategy-metrics' || actualId === 'summary' || actualId === 'options') && typeof initCharts === 'function') {
+    if (actualId === 'options') populateOptions();
+    if (['strategy-metrics', 'summary', 'options'].includes(actualId)) {
         setTimeout(initCharts, 50);
     }
-
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+};
 
 function showIncentiveSubTab(tabId, buttonEl) {
     console.log("Switching incentive sub-tab to:", tabId);
@@ -1477,16 +1447,12 @@ function showIncentiveSubTab(tabId, buttonEl) {
     }
 }
 
-function scrollNav(direction) {
+window.scrollNav = function(direction) {
     const container = document.getElementById('nav-tabs-container');
     if (!container) return;
-    
     const amount = 250;
-    container.scrollBy({ 
-        left: direction === 'left' ? -amount : amount, 
-        behavior: 'smooth' 
-    });
-}
+    container.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' });
+};
 
 function showCompSubTab(id) {
     ['neighborhood', 'avm', 'price_comp'].forEach(p => {
@@ -2428,7 +2394,6 @@ window.onload = function() {
         showTab('summary');
         
         setTimeout(refreshLiveIntelligence, 1000);
-        
         console.log('✅ Dashboard initialization complete');
     } catch (error) {
         console.error('❌ Error during initialization:', error);
