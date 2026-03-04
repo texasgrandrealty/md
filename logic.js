@@ -2432,3 +2432,5 @@ window.onload = function() {
         console.log('✅ Dashboard initialization complete');
     } catch (error) {
         console.error('❌ Error during initialization:', error);
+    }
+};
