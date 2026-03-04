@@ -1,4 +1,4 @@
-<!--
+﻿<!--
   2026 EXECUTIVE DASHBOARD - MASTER TEMPLATE (Protocol 000.002.001)
   
   SINGLE SOURCE OF TRUTH: propertyData object powers all 14 tabs dynamically.
@@ -2550,6 +2550,34 @@
             1 / 25
         </div>
     </div>
+
+    <script>
+        // Master Initialization Execution
+        window.onload = function() {
+            try {
+                console.log('🚀 Initializing Executive Dashboard...');
+                if (typeof detectPropertyUnit === 'function') detectPropertyUnit();
+                if (typeof injectDynamicData === 'function') injectDynamicData();
+                if (typeof populatePropertyData === 'function') populatePropertyData();
+                if (typeof populateReportingLinks === 'function') populateReportingLinks();
+                if (typeof syncPitchReports === 'function') syncPitchReports();
+                if (typeof calculateOption3Totals === 'function') calculateOption3Totals();
+                if (typeof attachEventListeners === 'function') attachEventListeners();
+                
+                // Charts need a slight delay for DOM readiness
+                setTimeout(() => {
+                    if (typeof initCharts === 'function') initCharts();
+                }, 100);
+            // Set default view
+            if (typeof showCompSubTab === 'function') showCompSubTab('neighborhood'); 
+            if (typeof showTab === 'function') showTab('summary', document.getElementById('nav-summary'));
+            
+            console.log('✅ Dashboard initialization complete');
+        } catch (error) {
+            console.error('❌ Error during initialization:', error);
+        }
+    };
+</script>
 
 </body>
 </html>
