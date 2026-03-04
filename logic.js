@@ -341,15 +341,6 @@ function calculateRemainingBalance(principal, annualRate, monthlyPayment, paymen
 }
 
 // --- CALCULATE ALL OPTION PAYMENTS AND VALUES ---
-// These constants are pulled directly from propertyData to prevent ReferenceErrors
-const SUBJECT_PRICE = propertyData.price;
-const SUBJECT_DP_PCT = propertyData.downPaymentPct;
-const MARKET_RATE = propertyData.marketRate;
-const PRICE_FLOOR_OPTION_1 = propertyData.priceFloor;
-const BUYDOWN_PRICE_OPTION_2 = propertyData.price;
-const OWNER_FINANCE_RATE = propertyData.ownerFinanceRate;
-const OWNER_FINANCE_DP_PCT = propertyData.ownerFinanceDownPct;
-const TOTAL_CDOM = propertyData.cdom;
 
 // Option 1: Price Strategy
 const option1Principal = roundCurrency(PRICE_FLOOR_OPTION_1 * (1 - SUBJECT_DP_PCT));
@@ -362,7 +353,7 @@ const option2PaymentYear2 = calculateMonthlyPayment(option2Principal, BUYDOWNS.R
 const option2PaymentYear3 = calculateMonthlyPayment(option2Principal, BUYDOWNS.RATES[2], 30);
 const option2PaymentYear4 = calculateMonthlyPayment(option2Principal, BUYDOWNS.RATES[3], 30);
 
-// Option 3: Owner Finance
+// Option 3: Owner Finance (calculated from amortization schedule)
 const option3DownPayment = roundCurrency(SUBJECT_PRICE * OWNER_FINANCE_DP_PCT);
 const option3Principal = roundCurrency(SUBJECT_PRICE - option3DownPayment);
 const option3Payment = calculateMonthlyPayment(option3Principal, OWNER_FINANCE_RATE, 30);
@@ -452,13 +443,13 @@ function populateOptions() {
     let additionalProfit = grandTotal - propertyData.price;
 
     // BRUTE FORCE THE INJECTION: Use innerHTML to force values to screen
-    const travelAfterBalloon = document.getElementById('total-revenue-after-balloon-value');
-    if (travelAfterBalloon) travelAfterBalloon.innerHTML = currencyFormat.format(grandTotal);
-    const sellerPremium = document.getElementById('seller-premium-value');
-    if (sellerPremium) sellerPremium.innerHTML = currencyFormat.format(additionalProfit);
+    document.getElementById('total-revenue-after-balloon-value').innerHTML = currencyFormat.format(grandTotal);
+    document.getElementById('seller-premium-value').innerHTML = currencyFormat.format(additionalProfit);
 
     // Inject Option 1 results
     const opt1MonthlyPayment = option1Payment ?? 0;
+    const opt1Detailed = document.getElementById('option1-payment');
+    if (opt1Detailed) opt1Detailed.textContent = currencyFormatDetailed.format(opt1MonthlyPayment);
     const opt1Summary = document.getElementById('option1-summary-payment');
     if (opt1Summary) opt1Summary.textContent = currencyFormat.format(opt1MonthlyPayment);
 
@@ -476,7 +467,8 @@ function populateOptions() {
     const ids_payments = [
         ['option2-yr1-payment', yr1Payment],
         ['option2-yr2-payment', yr2Payment],
-        ['option2-yr3-payment', yr3Payment]
+        ['option2-yr3-payment', yr3Payment],
+        ['option2-yr4-payment', yr4Payment]
     ];
     ids_payments.forEach(([id, value]) => {
         const el = document.getElementById(id);
@@ -527,14 +519,11 @@ function populateOptions() {
     if (opt3Summary) opt3Summary.textContent = currencyFormat.format(option3Payment ?? 0);
 
     // FINAL SYNC: Inject Monthly P&I Payment
-    const ownerFinanceEl = document.getElementById('owner-finance-payment');
-    if (ownerFinanceEl) ownerFinanceEl.innerHTML = currencyFormat.format(option3Payment);
+    document.getElementById('owner-finance-payment').innerHTML = currencyFormat.format(option3Payment);
 
     // FINAL SYNC: Ensure all Seller Finance values are injected
-    const totalRevAfterBalloonEl = document.getElementById('total-revenue-after-balloon-value');
-    if (totalRevAfterBalloonEl) totalRevAfterBalloonEl.innerHTML = currencyFormat.format(option3TotalRevenue + option3RemainingBalance);
-    const sellerPremiumEl = document.getElementById('seller-premium-value');
-    if (sellerPremiumEl) sellerPremiumEl.innerHTML = currencyFormat.format((option3TotalRevenue + option3RemainingBalance) - propertyData.price);
+    document.getElementById('total-revenue-after-balloon-value').innerHTML = currencyFormat.format(option3TotalRevenue + option3RemainingBalance);
+    document.getElementById('seller-premium-value').innerHTML = currencyFormat.format((option3TotalRevenue + option3RemainingBalance) - propertyData.price);
 }
 
 // --- CHART FUNCTIONS ---
@@ -613,17 +602,6 @@ function initLocalOutcomesChart() {
 }
 
 function initCharts() {
-    const REQUIRED_CANVASES = [
-        'pricingStrategyChart', 'liquidityVelocityChart',
-        'localSupplyChartSubject', 'localSupplyChartMacro', 'localOutcomesChart',
-        'rateChart', 'marketHealthChart'
-    ];
-    REQUIRED_CANVASES.forEach(function(id) {
-        if (!document.getElementById(id)) {
-            console.warn(`initCharts: Canvas element #${id} not found — chart will be skipped.`);
-        }
-    });
-
     try {
         updateSellerScarcityInsights();
 
@@ -1384,28 +1362,24 @@ function attachEventListeners() {
     console.log("Event listeners attached successfully");
 }
 
-window.showTab = function(tabId, navButtonEl) {
-    if (!tabId) return;
-    let actualId = tabId;
-    if (tabId === 'incentives' || tabId === 'options') actualId = 'options';
-    if (tabId === 'metrics' || tabId === 'roadmap') actualId = 'strategy-metrics';
-
-    document.querySelectorAll('main > div[id^="tab-"], main > div[id^="page-"]').forEach(t => {
-        t.classList.add('hidden');
+function showTab(tabId, navButtonEl) {
+    console.log("Forcing Tab:", tabId);
+    // Hide all with highest priority
+    document.querySelectorAll('main > div').forEach(div => {
+        div.style.setProperty('display', 'none', 'important');
+        div.classList.add('hidden');
     });
-
-    const target = document.getElementById(`tab-${actualId}`) || document.getElementById(`page-${actualId}`);
-    if (target) target.classList.remove('hidden');
-
+    // Show target with highest priority
+    const target = document.getElementById('tab-' + tabId);
+    if (target) {
+        target.style.setProperty('display', 'block', 'important');
+        target.classList.remove('hidden');
+    }
+    // Update nav buttons
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
     if (navButtonEl) navButtonEl.classList.add('active');
-
-    if (actualId === 'options') populateOptions();
-    if (['strategy-metrics', 'summary', 'options'].includes(actualId)) {
-        setTimeout(initCharts, 50);
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+    window.scrollTo(0,0);
+}
 
 function showIncentiveSubTab(tabId, buttonEl) {
     console.log("Switching incentive sub-tab to:", tabId);
@@ -1447,12 +1421,16 @@ function showIncentiveSubTab(tabId, buttonEl) {
     }
 }
 
-window.scrollNav = function(direction) {
+function scrollNav(direction) {
     const container = document.getElementById('nav-tabs-container');
     if (!container) return;
+    
     const amount = 250;
-    container.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' });
-};
+    container.scrollBy({ 
+        left: direction === 'left' ? -amount : amount, 
+        behavior: 'smooth' 
+    });
+}
 
 function showCompSubTab(id) {
     ['neighborhood', 'avm', 'price_comp'].forEach(p => {
@@ -2240,8 +2218,7 @@ function calculateFunnelHealth() {
         return null;
     }
 
-    // Hard lock conversion count to 1 per dashboard requirements.
-    const showings = 1;
+    const showings = stats.brokerBayShowings || 1;
     const saves = stats.zillowSaves || 0;
     const FRICTION_THRESHOLD = 0.05;
     
@@ -2269,8 +2246,7 @@ function refreshLiveIntelligence() {
         const stats = propertyData.syndicationStats;
         if (!stats) { console.error('LIVE INTEL: syndicationStats missing'); return; }
 
-        // Keep both scoreboard + live counters pinned to 1.
-        const finalShowings = 1;
+        const finalShowings = Math.max(Number(stats.brokerBayShowings) || 0, 1);
 
         // Update BOTH showing displays (Scoreboard + Live Intel)
         const targets = ['live-showings-count', 'stat-brokerbay-showings'];
@@ -2372,12 +2348,18 @@ function refreshLiveIntelligence() {
 }
 
 // --- MASTER INITIALIZATION ---
-window.onload = function() {
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Dashboard initialization started');
+
     try {
-        console.log('🚀 Initializing Executive Dashboard...');
         detectPropertyUnit();
         injectDynamicData();
         populatePropertyData();
+    } catch (err) {
+        console.error('Phase 1 (core data injection) failed:', err);
+    }
+
+    try {
         populateReportingLinks();
         syncPitchReports();
         calculateOption3Totals();
@@ -2386,17 +2368,26 @@ window.onload = function() {
         populateAllCompTables();
         populateOptions();
         populateAmortizationTable();
-        populateCompleteAmortizationTable(); 
-        
-        setTimeout(initCharts, 100);
-        
-        showCompSubTab('neighborhood'); 
+        populateCompleteAmortizationTable();
+
+        setTimeout(function() {
+            try {
+                initCharts();
+                console.log('✅ Charts initialized');
+            } catch (chartError) {
+                console.error('Chart initialization failed (non-blocking):', chartError);
+            }
+        }, 100);
+
+        showCompSubTab('neighborhood');
         showTab('summary');
-        
-        setTimeout(refreshLiveIntelligence, 1000);
-        console.log('✅ Dashboard initialization complete');
-    } catch (error) {
-        console.error('❌ Error during initialization:', error);
+    } catch (err) {
+        console.error('Phase 2 (deferred initialization) failed:', err);
     }
-};
-// Sync Force: March 4 2026
+
+    console.log('✅ Dashboard initialization complete');
+
+    setTimeout(function() {
+        refreshLiveIntelligence();
+    }, 2000);
+});

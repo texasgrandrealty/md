@@ -12,7 +12,7 @@ const propertyData = {
     baths: 3,
     lotSize: '0.19 AC',
     yearBuilt: '2005',
-    youtubeID: 'fj_mo819gi0',
+    youtubeID: 'fj_mo819gi0?si=Q98hN5PFlzK6MOKG',
     active: 14,
     pending: 5,
     underContract: 0,
