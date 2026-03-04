@@ -452,13 +452,13 @@ function populateOptions() {
     let additionalProfit = grandTotal - propertyData.price;
 
     // BRUTE FORCE THE INJECTION: Use innerHTML to force values to screen
-    document.getElementById('total-revenue-after-balloon-value').innerHTML = currencyFormat.format(grandTotal);
-    document.getElementById('seller-premium-value').innerHTML = currencyFormat.format(additionalProfit);
+    const travelAfterBalloon = document.getElementById('total-revenue-after-balloon-value');
+    if (travelAfterBalloon) travelAfterBalloon.innerHTML = currencyFormat.format(grandTotal);
+    const sellerPremium = document.getElementById('seller-premium-value');
+    if (sellerPremium) sellerPremium.innerHTML = currencyFormat.format(additionalProfit);
 
     // Inject Option 1 results
     const opt1MonthlyPayment = option1Payment ?? 0;
-    const opt1Detailed = document.getElementById('option1-payment');
-    if (opt1Detailed) opt1Detailed.textContent = currencyFormatDetailed.format(opt1MonthlyPayment);
     const opt1Summary = document.getElementById('option1-summary-payment');
     if (opt1Summary) opt1Summary.textContent = currencyFormat.format(opt1MonthlyPayment);
 
@@ -476,8 +476,7 @@ function populateOptions() {
     const ids_payments = [
         ['option2-yr1-payment', yr1Payment],
         ['option2-yr2-payment', yr2Payment],
-        ['option2-yr3-payment', yr3Payment],
-        ['option2-yr4-payment', yr4Payment]
+        ['option2-yr3-payment', yr3Payment]
     ];
     ids_payments.forEach(([id, value]) => {
         const el = document.getElementById(id);
@@ -528,11 +527,14 @@ function populateOptions() {
     if (opt3Summary) opt3Summary.textContent = currencyFormat.format(option3Payment ?? 0);
 
     // FINAL SYNC: Inject Monthly P&I Payment
-    document.getElementById('owner-finance-payment').innerHTML = currencyFormat.format(option3Payment);
+    const ownerFinanceEl = document.getElementById('owner-finance-payment');
+    if (ownerFinanceEl) ownerFinanceEl.innerHTML = currencyFormat.format(option3Payment);
 
     // FINAL SYNC: Ensure all Seller Finance values are injected
-    document.getElementById('total-revenue-after-balloon-value').innerHTML = currencyFormat.format(option3TotalRevenue + option3RemainingBalance);
-    document.getElementById('seller-premium-value').innerHTML = currencyFormat.format((option3TotalRevenue + option3RemainingBalance) - propertyData.price);
+    const totalRevAfterBalloonEl = document.getElementById('total-revenue-after-balloon-value');
+    if (totalRevAfterBalloonEl) totalRevAfterBalloonEl.innerHTML = currencyFormat.format(option3TotalRevenue + option3RemainingBalance);
+    const sellerPremiumEl = document.getElementById('seller-premium-value');
+    if (sellerPremiumEl) sellerPremiumEl.innerHTML = currencyFormat.format((option3TotalRevenue + option3RemainingBalance) - propertyData.price);
 }
 
 // --- CHART FUNCTIONS ---
@@ -1383,30 +1385,56 @@ function attachEventListeners() {
 }
 
 function showTab(tabId, navButtonEl) {
-    console.log("Forcing Tab:", tabId);
-    const ALL_TABS = [
-        'summary', 'property', 'local', 'strategy-metrics', 'comps',
-        'rpr', 'liquidity', 'campaign', 'live-intel', 'rates',
-        'options', 'decision-path', 'documents', 'search-properties'
-    ];
-    // Explicitly hide every known main content tab
-    ALL_TABS.forEach(id => {
-        const el = document.getElementById('tab-' + id);
-        if (el) {
-            el.style.setProperty('display', 'none', 'important');
-            el.classList.add('hidden');
-        }
-    });
-    // Show target with highest priority
-    const target = document.getElementById('tab-' + tabId);
-    if (target) {
-        target.style.setProperty('display', 'block', 'important');
-        target.classList.remove('hidden');
+    if (!tabId) return;
+
+    // Handle ID aliases
+    let actualId = tabId;
+    if (tabId === 'incentives' || tabId === 'options') {
+        actualId = 'options';
     }
-    // Update nav buttons
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    if (navButtonEl) navButtonEl.classList.add('active');
-    window.scrollTo(0,0);
+    // Handle legacy metrics/roadmap references - both now point to strategy-metrics
+    if (tabId === 'metrics' || tabId === 'roadmap') {
+        actualId = 'strategy-metrics';
+    }
+
+    console.log("Switching to tab:", actualId, "(from:", tabId, ")");
+
+    // Hide all tab pages
+    document.querySelectorAll('main > div[id^="tab-"], main > div[id^="page-"]').forEach(t => {
+        t.classList.add('hidden');
+    });
+
+    // Show target page
+    const target = document.getElementById(`tab-${actualId}`) || document.getElementById(`page-${actualId}`);
+    if (target) {
+        target.classList.remove('hidden');
+    } else {
+        console.error("Target page not found:", actualId);
+        return;
+    }
+
+    // Update nav button active state
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    const activeBtn = navButtonEl || document.getElementById(`nav-${tabId}`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+
+    // Auto-fill data when options/incentives tab is selected
+    if (actualId === 'options' && typeof populateOptions === 'function') {
+        populateOptions();
+    }
+
+    // Initialize charts for strategy-metrics/summary/options tabs
+    if ((actualId === 'strategy-metrics' || actualId === 'summary' || actualId === 'options') && typeof initCharts === 'function') {
+        setTimeout(initCharts, 50);
+    }
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function showIncentiveSubTab(tabId, buttonEl) {
