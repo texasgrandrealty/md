@@ -2287,53 +2287,78 @@ function refreshLiveIntelligence() {
         const stats = propertyData.syndicationStats;
         if (!stats) { console.error('LIVE INTEL: syndicationStats missing'); return; }
 
-        const finalShowings = Math.max(Number(stats.brokerBayShowings) || 0, 1);
-
-        // Update BOTH showing displays (Scoreboard + Live Intel)
-        const targets = ['live-showings-count', 'stat-brokerbay-showings'];
-        targets.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.innerText = finalShowings;
-        });
-
-        // Update Views and Saves on Scoreboard
-        if (document.getElementById('stat-listtrac-views')) document.getElementById('stat-listtrac-views').innerText = stats.listTracTotalViews;
-        if (document.getElementById('stat-zillow-saves')) document.getElementById('stat-zillow-saves').innerText = stats.zillowSaves;
-
-        // Update Homes.com views on Scoreboard banner
-        var homesStats = propertyData.homesComStats;
-        if (homesStats) {
-            var homesViews = Number(homesStats.totalViews) || 0;
-            var homesLeads = Number(homesStats.leads) || 0;
-            var hEl = document.getElementById('stat-homescom-views');
-            if (hEl) hEl.innerText = homesViews > 0 ? numberFormat.format(homesViews) : '--';
-            var hCardViews = document.getElementById('homescom-total-views');
-            if (hCardViews) hCardViews.innerText = homesViews > 0 ? numberFormat.format(homesViews) : '--';
-            var hCardLeads = document.getElementById('homescom-leads');
-            if (hCardLeads) hCardLeads.innerText = homesLeads > 0 ? homesLeads : '--';
-            var hReportLink = document.getElementById('homescom-report-link');
-            if (hReportLink && homesStats.reportUrl) hReportLink.href = homesStats.reportUrl;
-        }
-
-        // Update Views and Saves on Live Intel tab
-        var formattedViews = numberFormat.format(Number(stats.listTracTotalViews) || 0);
-        var formattedSaves = numberFormat.format(Number(stats.zillowSaves) || 0);
+        const homesStats = propertyData.homesComStats || {};
         var setEl = function(id, value) { var el = document.getElementById(id); if (el) el.innerText = value; };
-        setEl('live-views-total', formattedViews);
-        setEl('live-saves-zillow', formattedSaves);
 
-        // Funnel health — updates both Live Intel and Scoreboard
+        // ── Derived aggregates ──────────────────────────────────────────────
+        const listTracViews  = Number(stats.listTracTotalViews) || 0;
+        const homesViews     = Number(homesStats.totalViews)    || 0;
+        const combinedViews  = listTracViews + homesViews;
+        const zillowSaves    = Number(stats.zillowSaves)        || 0;
+        const inquiries      = Number(stats.listTracInquiries)  || 0;
+        const finalShowings  = Math.max(Number(stats.brokerBayShowings) || 0, 1);
+        const mlsMatches     = Number(stats.mlsReverseProspectMatches) || 0;
+        const fbPaidReach    = Number(stats.facebookPaidReach)  || 0;
+        const fbPaidSpend    = stats.facebookPaidSpend || '--';
+
+        // Retargeting (Homes.com)
+        const rtViews  = Number(homesStats.homesComRetargetingViews)  || 0;
+        const rtSites  = Number(homesStats.homesComRetargetingSites)  || 0;
+        const rtUsers  = Number(homesStats.homesComRetargetingUsers)  || 0;
+
+        // Broker/Agent site aggregation:
+        //   ListTrac top-website count + Homes.com featuredSites count
+        const listTracSiteCount  = Array.isArray(stats.listTracTopWebsites) ? stats.listTracTopWebsites.length : 0;
+        const homesSiteCount     = Array.isArray(homesStats.featuredSites)  ? homesStats.featuredSites.length  : 0;
+        const brokerSiteTotal    = listTracSiteCount + homesSiteCount;
+
+        // ── CARD A: AWARENESS ───────────────────────────────────────────────
+        setEl('intel-awareness-total', combinedViews > 0 ? numberFormat.format(combinedViews) : '--');
+
+        // ── CARD B: ENGAGEMENT ──────────────────────────────────────────────
+        setEl('intel-engagement-saves',    zillowSaves > 0  ? numberFormat.format(zillowSaves) : '--');
+        setEl('intel-engagement-inquiries', inquiries + ' inquiries');
+
+        // ── CARD C: PAID PERFORMANCE ────────────────────────────────────────
+        setEl('intel-paid-reach', fbPaidReach > 0 ? numberFormat.format(fbPaidReach) : '--');
+        setEl('intel-paid-spend', '$' + fbPaidSpend + ' spend');
+
+        // ── CARD D: SOCIAL RETARGETING ──────────────────────────────────────
+        setEl('intel-retargeting-views', rtViews > 0 ? numberFormat.format(rtViews) : '--');
+        setEl('intel-retargeting-sites', rtSites > 0 ? rtSites : '--');
+        setEl('intel-retargeting-users', rtUsers > 0 ? rtUsers : '--');
+
+        // Also update the Marketing Strategy retargeting KPI cards
+        setEl('retargeting-views', rtViews > 0 ? numberFormat.format(rtViews) : '171');
+        setEl('retargeting-sites', rtSites > 0 ? rtSites : '70');
+        setEl('retargeting-users', rtUsers > 0 ? rtUsers : '38');
+
+        // ── CARD E: AGENT ACTIVITY ──────────────────────────────────────────
+        setEl('intel-agent-showings',  finalShowings);
+        setEl('intel-agent-inquiries', mlsMatches + ' MLS inquiries');
+
+        // ── CARD F: BROKER SUPPORT ──────────────────────────────────────────
+        setEl('intel-broker-sites', brokerSiteTotal > 0 ? brokerSiteTotal : '--');
+
+        // ── CARD G: PERFORMANCE (funnel health) ─────────────────────────────
         var health = (typeof calculateFunnelHealth === 'function') ? calculateFunnelHealth() : null;
         if (health) {
-            setEl('live-funnel-percentage', health.healthPercentage + '%');
-            setEl('live-funnel-status', health.statusText);
-            setEl('stat-funnel-percentage', health.healthPercentage + '%');
-            setEl('stat-funnel-status', health.statusText);
+            setEl('intel-performance-pct',    health.healthPercentage + '%');
+            setEl('intel-performance-status', health.statusText);
+            var perfBar = document.getElementById('intel-performance-bar');
+            if (perfBar) perfBar.style.width = health.healthPercentage + '%';
 
-            ['live-funnel-bar', 'stat-funnel-bar'].forEach(function(id) {
-                var bar = document.getElementById(id);
-                if (bar) bar.style.width = health.healthPercentage + '%';
-            });
+            // Keep the larger Conversion Health panel in sync
+            setEl('live-funnel-percentage', health.healthPercentage + '%');
+            setEl('live-funnel-status',     health.statusText);
+            var mainBar = document.getElementById('live-funnel-bar');
+            if (mainBar) mainBar.style.width = health.healthPercentage + '%';
+
+            // Scoreboard
+            setEl('stat-funnel-percentage', health.healthPercentage + '%');
+            setEl('stat-funnel-status',     health.statusText);
+            var statBar = document.getElementById('stat-funnel-bar');
+            if (statBar) statBar.style.width = health.healthPercentage + '%';
 
             ['live-funnel-warning', 'stat-funnel-warning'].forEach(function(id) {
                 var el = document.getElementById(id);
@@ -2344,7 +2369,35 @@ function refreshLiveIntelligence() {
             });
         }
 
-        // Top Websites list
+        // ── CARD H: CONVERSIONS ─────────────────────────────────────────────
+        setEl('intel-conversions-showings', finalShowings);
+        setEl('intel-conversions-matches',  mlsMatches + ' reverse prospect');
+
+        // ── SLIM HEADER BANNER — Combined Totals ────────────────────────────
+        // "Views" = listTrac + Homes.com combined; "Saves" = Zillow saves
+        setEl('stat-listtrac-views',    combinedViews > 0 ? numberFormat.format(combinedViews) : '--');
+        setEl('stat-zillow-saves',      zillowSaves > 0   ? numberFormat.format(zillowSaves)   : '--');
+
+        // Showings (Scoreboard + legacy Live Intel IDs)
+        ['live-showings-count', 'stat-brokerbay-showings'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) el.innerText = finalShowings;
+        });
+
+        // ── Homes.com views on Scoreboard banner ────────────────────────────
+        if (homesViews > 0) {
+            var hEl = document.getElementById('stat-homescom-views');
+            if (hEl) hEl.innerText = numberFormat.format(homesViews);
+        }
+        var homesLeads = Number(homesStats.leads) || 0;
+        var hCardViews = document.getElementById('homescom-total-views');
+        if (hCardViews) hCardViews.innerText = homesViews > 0 ? numberFormat.format(homesViews) : '--';
+        var hCardLeads = document.getElementById('homescom-leads');
+        if (hCardLeads) hCardLeads.innerText = homesLeads > 0 ? homesLeads : '--';
+        var hReportLink = document.getElementById('homescom-report-link');
+        if (hReportLink && homesStats.reportUrl) hReportLink.href = homesStats.reportUrl;
+
+        // ── Top Websites list ───────────────────────────────────────────────
         var websitesList = document.getElementById('live-top-websites');
         if (websitesList && Array.isArray(stats.listTracTopWebsites)) {
             websitesList.innerHTML = stats.listTracTopWebsites.map(function(site) {
@@ -2355,7 +2408,7 @@ function refreshLiveIntelligence() {
             }).join('');
         }
 
-        // Top Cities list
+        // ── Top Cities list ─────────────────────────────────────────────────
         var citiesList = document.getElementById('live-top-cities');
         if (citiesList && Array.isArray(stats.listTracTopCities)) {
             citiesList.innerHTML = stats.listTracTopCities.map(function(city) {
@@ -2366,7 +2419,7 @@ function refreshLiveIntelligence() {
             }).join('');
         }
 
-        // BrokerBay Feedback Log — inject rows into #live-feedback-body
+        // ── BrokerBay Feedback Log ──────────────────────────────────────────
         var feedbackBody = document.getElementById('live-feedback-body');
         if (feedbackBody) {
             var feedbackLog = propertyData.feedbackLog;
@@ -2397,7 +2450,7 @@ function refreshLiveIntelligence() {
             }
         }
 
-        console.log('LIVE INTEL: refreshLiveIntelligence() complete. Showings=' + finalShowings);
+        console.log('LIVE INTEL: refreshLiveIntelligence() complete. CombinedViews=' + combinedViews + ' Showings=' + finalShowings);
     } catch (err) {
         console.error('LIVE INTEL: refreshLiveIntelligence() failed:', err);
     }

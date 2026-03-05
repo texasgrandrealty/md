@@ -390,18 +390,21 @@ def fetch_homes_com_stats():
 
     if BeautifulSoup is None:
         print("  [WARN] BeautifulSoup not available - skipping Homes.com stats extraction")
-        return None, 0, 0
+        return None, 0, 0, 0, 0, 0
 
     email_address = os.getenv('REPORTING_EMAIL')
     app_password = os.getenv('REPORTING_APP_PASSWORD')
 
     if not email_address or not app_password:
         print("  [ERROR] Missing email credentials for Homes.com fetch")
-        return None, 0, 0
+        return None, 0, 0, 0, 0, 0
 
     report_url = None
     total_views = 0
     leads = 0
+    retargeting_views = 0
+    retargeting_sites = 0
+    retargeting_users = 0
 
     try:
         mail = imaplib.IMAP4_SSL('imap.gmail.com')
@@ -414,7 +417,7 @@ def fetch_homes_com_stats():
             print("  [WARN] No Homes.com Weekly Report emails found")
             mail.close()
             mail.logout()
-            return None, 0, 0
+            return None, 0, 0, 0, 0, 0
 
         message_ids = messages[0].split()
         print(f"  [DEBUG] Found {len(message_ids)} Homes.com Weekly Report email(s)")
@@ -482,7 +485,35 @@ def fetch_homes_com_stats():
                             leads = int(leads_match.group(1).replace(',', ''))
                             print(f"  [DEBUG] Homes.com Leads: {leads}")
 
-                        if total_views > 0 or leads > 0:
+                        # Retargeting block extraction
+                        # The Homes.com report contains a "Retargeting" section with
+                        # Views, Sites, and Users counts — scan for the block.
+                        retarget_block = re.search(
+                            r'Retarget(?:ing)?[\s\S]{0,400}?(\d[\d,]*)\s*Views?[\s\S]{0,200}?(\d[\d,]*)\s*Sites?[\s\S]{0,200}?(\d[\d,]*)\s*Users?',
+                            page_text, re.IGNORECASE
+                        )
+                        if retarget_block:
+                            retargeting_views = int(retarget_block.group(1).replace(',', ''))
+                            retargeting_sites = int(retarget_block.group(2).replace(',', ''))
+                            retargeting_users = int(retarget_block.group(3).replace(',', ''))
+                            print(f"  [DEBUG] Retargeting: Views={retargeting_views} Sites={retargeting_sites} Users={retargeting_users}")
+                        else:
+                            # Fallback: try individual patterns near a "Retargeting" heading
+                            rt_section = re.search(r'Retarget(?:ing)?(.{0,600})', page_text, re.IGNORECASE | re.DOTALL)
+                            if rt_section:
+                                rt_text = rt_section.group(1)
+                                rv = re.search(r'(\d[\d,]*)\s*Views?', rt_text, re.IGNORECASE)
+                                rs = re.search(r'(\d[\d,]*)\s*Sites?', rt_text, re.IGNORECASE)
+                                ru = re.search(r'(\d[\d,]*)\s*Users?', rt_text, re.IGNORECASE)
+                                if rv: retargeting_views = int(rv.group(1).replace(',', ''))
+                                if rs: retargeting_sites = int(rs.group(1).replace(',', ''))
+                                if ru: retargeting_users = int(ru.group(1).replace(',', ''))
+                                if rv or rs or ru:
+                                    print(f"  [DEBUG] Retargeting (fallback): Views={retargeting_views} Sites={retargeting_sites} Users={retargeting_users}")
+                                else:
+                                    print("  [DEBUG] Retargeting block found but no numeric matches")
+
+                        if total_views > 0 or leads > 0 or retargeting_views > 0:
                             break  # Successful extraction from this email
                     else:
                         print(f"  [WARN] Homes.com report page returned HTTP {resp.status_code}")
@@ -498,12 +529,13 @@ def fetch_homes_com_stats():
 
     except Exception as e:
         print(f"  [ERROR] Gmail IMAP connection failed for Homes.com: {e}")
-        return None, 0, 0
+        return None, 0, 0, 0, 0, 0
 
-    return report_url, total_views, leads
+    return report_url, total_views, leads, retargeting_views, retargeting_sites, retargeting_users
 
 
-def fetch_brokerbay_feedback():    """
+def fetch_brokerbay_feedback():
+    """
     Secure IMAP connection to Gmail to extract BrokerBay feedback emails.
     Flexible: Search only for SUBJECT "Feedback Submitted", then filter for property locally.
     Overwrites feedbackLog with most recent matching feedback entries.
@@ -909,7 +941,7 @@ def fetch_fallback_stats():
 # DATA.JS UPDATE
 # ============================================================================
 
-def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count=0, brokerbay_feedback=None, homes_report_url=None, homes_total_views=0, homes_leads=0):
+def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count=0, brokerbay_feedback=None, homes_report_url=None, homes_total_views=0, homes_leads=0, homes_retargeting_views=0, homes_retargeting_sites=0, homes_retargeting_users=0):
     """
     Update data.js syndicationStats block with fetched ListTrac data and BrokerBay feedback.
     
@@ -1036,6 +1068,23 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
         if content != old_content:
             print(f"    -> homesComStats.reportUrl: {homes_report_url}")
 
+    # Update Homes.com Retargeting Stats (homesComRetargeting* fields)
+    if homes_retargeting_views > 0:
+        old_content = content
+        content = re.sub(r'(homesComRetargetingViews:\s*)\d+', f'\\g<1>{homes_retargeting_views}', content)
+        if content != old_content:
+            print(f"    -> homesComRetargetingViews: {homes_retargeting_views}")
+    if homes_retargeting_sites > 0:
+        old_content = content
+        content = re.sub(r'(homesComRetargetingSites:\s*)\d+', f'\\g<1>{homes_retargeting_sites}', content)
+        if content != old_content:
+            print(f"    -> homesComRetargetingSites: {homes_retargeting_sites}")
+    if homes_retargeting_users > 0:
+        old_content = content
+        content = re.sub(r'(homesComRetargetingUsers:\s*)\d+', f'\\g<1>{homes_retargeting_users}', content)
+        if content != old_content:
+            print(f"    -> homesComRetargetingUsers: {homes_retargeting_users}")
+
     # Update Last Sync Date - handles both 'quoted' and "double-quoted" strings
     current_date = datetime.now().strftime('%B %d, %Y')
     current_date = re.sub(r' 0(\d),', r' \1,', current_date)  # Remove leading zero from day
@@ -1101,8 +1150,8 @@ def main():
 
     # Step 4: Fetch Homes.com Elite Performance Stats
     print("\n  --- HOMES.COM WEEKLY REPORT EXTRACTION ---")
-    homes_report_url, homes_total_views, homes_leads = fetch_homes_com_stats()
-    print(f"  [INFO] Homes.com: URL={homes_report_url}, Views={homes_total_views}, Leads={homes_leads}")
+    homes_report_url, homes_total_views, homes_leads, homes_retargeting_views, homes_retargeting_sites, homes_retargeting_users = fetch_homes_com_stats()
+    print(f"  [INFO] Homes.com: URL={homes_report_url}, Views={homes_total_views}, Leads={homes_leads}, RetargetViews={homes_retargeting_views}, RetargetSites={homes_retargeting_sites}, RetargetUsers={homes_retargeting_users}")
 
     scraped_count = int(brokerbay_count or 0)
     existing_count = read_existing_brokerbay_count()
@@ -1128,7 +1177,8 @@ def main():
     # Step 5: Update data.js if we have any valid data
     if lifetime_views > 0 or views_30day > 0 or favorites >= 0 or brokerbay_count > 0:
         last_date = update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count, brokerbay_feedback,
-                                   homes_report_url=homes_report_url, homes_total_views=homes_total_views, homes_leads=homes_leads)
+                                   homes_report_url=homes_report_url, homes_total_views=homes_total_views, homes_leads=homes_leads,
+                                   homes_retargeting_views=homes_retargeting_views, homes_retargeting_sites=homes_retargeting_sites, homes_retargeting_users=homes_retargeting_users)
         print("Sync Successful!")
         print(f"   - Lifetime Views: {lifetime_views}")
         print(f"   - 30-Day Views: {views_30day}")
@@ -1141,6 +1191,7 @@ def main():
         print(f"   - Feedback Entries: {len(brokerbay_feedback) if brokerbay_feedback else 0}")
         print(f"   - Homes.com Views: {homes_total_views}")
         print(f"   - Homes.com Leads: {homes_leads}")
+        print(f"   - Retargeting Views: {homes_retargeting_views}, Sites: {homes_retargeting_sites}, Users: {homes_retargeting_users}")
         print(f"   - Updated On: {last_date}")
     else:
         print("Sync completed but no data found.")
@@ -1156,6 +1207,7 @@ def main():
     print(f"Final Feedback Entries: {len(brokerbay_feedback) if brokerbay_feedback else 0}  [feedbackLog]")
     print(f"Final Homes.com Views: {homes_total_views}  [homesComStats.totalViews]")
     print(f"Final Homes.com Leads: {homes_leads}  [homesComStats.leads]")
+    print(f"Final Retargeting: Views={homes_retargeting_views} Sites={homes_retargeting_sites} Users={homes_retargeting_users}  [homesComStats.homesComRetargeting*]")
 
 
 if __name__ == '__main__':

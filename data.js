@@ -91,6 +91,9 @@ const propertyData = {
         listHubReach: 15400,
         facebookReach: 0,
         fbSpend: '--',
+        // Paid Social (MANUAL entry — update after each Facebook campaign)
+        facebookPaidReach: 0,
+        facebookPaidSpend: '--',
         
         // Mid Funnel: Engagement (AUTOMATED from ListTrac)
         listTracInquiries: 8,
@@ -124,10 +127,15 @@ const propertyData = {
     // Homes.com Elite Performance Data
     // AUTOMATED FIELDS (sync_stats.py fills these from Homes.com Weekly Report email):
     //   reportUrl, totalViews, leads, featuredSites
+    //   homesComRetargetingViews, homesComRetargetingSites, homesComRetargetingUsers
     homesComStats: {
         reportUrl: 'https://www.homes.com',
         totalViews: 0,
         leads: 0,
+        // Retargeting block — AUTOMATED from Homes.com Weekly Report
+        homesComRetargetingViews: 171,
+        homesComRetargetingSites: 70,
+        homesComRetargetingUsers: 38,
         featuredSites: [
             { name: 'The Wall Street Journal', logo: 'wsj' },
             { name: 'Mansion Global', logo: 'mansion-global' },
