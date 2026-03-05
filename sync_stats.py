@@ -379,8 +379,131 @@ def extract_top_cities(html, limit=5):
 # BROKERBAY EMAIL EXTRACTION - "The Bulldozer" for Feedback Intelligence
 # ============================================================================
 
-def fetch_brokerbay_feedback():
+def fetch_homes_com_stats():
     """
+    Secure IMAP connection to Gmail to extract Homes.com Weekly Report emails.
+    Searches for subject "Homes.com Weekly Report", extracts the unique listing URL,
+    then scrapes Views and Leads from the report page.
+    Returns (report_url, total_views, leads).
+    """
+    print("  [INFO] Connecting to Gmail IMAP for Homes.com Weekly Report...")
+
+    if BeautifulSoup is None:
+        print("  [WARN] BeautifulSoup not available - skipping Homes.com stats extraction")
+        return None, 0, 0
+
+    email_address = os.getenv('REPORTING_EMAIL')
+    app_password = os.getenv('REPORTING_APP_PASSWORD')
+
+    if not email_address or not app_password:
+        print("  [ERROR] Missing email credentials for Homes.com fetch")
+        return None, 0, 0
+
+    report_url = None
+    total_views = 0
+    leads = 0
+
+    try:
+        mail = imaplib.IMAP4_SSL('imap.gmail.com')
+        mail.login(email_address, app_password)
+        mail.select('inbox')
+
+        print('  [DEBUG] IMAP search: looking for SUBJECT "Homes.com Weekly Report"')
+        status, messages = mail.search(None, '(SUBJECT "Homes.com Weekly Report")')
+        if status != 'OK' or not messages[0].strip():
+            print("  [WARN] No Homes.com Weekly Report emails found")
+            mail.close()
+            mail.logout()
+            return None, 0, 0
+
+        message_ids = messages[0].split()
+        print(f"  [DEBUG] Found {len(message_ids)} Homes.com Weekly Report email(s)")
+
+        # Process newest email first
+        for msg_id in reversed(message_ids):
+            try:
+                status, msg_data = mail.fetch(msg_id, '(RFC822)')
+                if status != 'OK' or not msg_data or not msg_data[0]:
+                    continue
+
+                email_message = email.message_from_bytes(msg_data[0][1])
+                html_content = ""
+                body_text = ""
+
+                if email_message.is_multipart():
+                    for part in email_message.walk():
+                        ct = part.get_content_type()
+                        if ct == "text/html":
+                            html_content = part.get_payload(decode=True).decode('utf-8', errors='ignore')
+                        elif ct == "text/plain":
+                            body_text = part.get_payload(decode=True).decode('utf-8', errors='ignore')
+                else:
+                    ct = email_message.get_content_type()
+                    if ct == "text/html":
+                        html_content = email_message.get_payload(decode=True).decode('utf-8', errors='ignore')
+                    elif ct == "text/plain":
+                        body_text = email_message.get_payload(decode=True).decode('utf-8', errors='ignore')
+
+                # Extract Homes.com listing URL from the email body
+                search_text = html_content or body_text
+                url_match = re.search(r'https?://www\.homes\.com/[^\s\'"<>]+', search_text)
+                if url_match:
+                    report_url = url_match.group(0).rstrip('.,;)')
+                    print(f"  [DEBUG] Found Homes.com report URL: {report_url}")
+                else:
+                    print("  [DEBUG] No Homes.com listing URL found in email body")
+                    continue  # Try next (older) email
+
+                # Attempt to scrape views and leads from report URL
+                try:
+                    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+                    resp = requests.get(report_url, headers=headers, timeout=15)
+                    if resp.status_code == 200:
+                        soup = BeautifulSoup(resp.text, 'html.parser')
+
+                        # Pattern: look for "Views" and "Leads" stat blocks
+                        page_text = soup.get_text(separator=' ', strip=True)
+
+                        # Views extraction
+                        views_match = re.search(
+                            r'(\d[\d,]*)\s*(?:Total\s+)?Views?',
+                            page_text, re.IGNORECASE
+                        )
+                        if views_match:
+                            total_views = int(views_match.group(1).replace(',', ''))
+                            print(f"  [DEBUG] Homes.com Views: {total_views}")
+
+                        # Leads extraction
+                        leads_match = re.search(
+                            r'(\d[\d,]*)\s*(?:Total\s+)?Leads?',
+                            page_text, re.IGNORECASE
+                        )
+                        if leads_match:
+                            leads = int(leads_match.group(1).replace(',', ''))
+                            print(f"  [DEBUG] Homes.com Leads: {leads}")
+
+                        if total_views > 0 or leads > 0:
+                            break  # Successful extraction from this email
+                    else:
+                        print(f"  [WARN] Homes.com report page returned HTTP {resp.status_code}")
+                except Exception as scrape_err:
+                    print(f"  [WARN] Could not scrape Homes.com report page: {scrape_err}")
+
+            except Exception as e:
+                print(f"  [WARN] Error processing Homes.com email: {e}")
+                continue
+
+        mail.close()
+        mail.logout()
+
+    except Exception as e:
+        print(f"  [ERROR] Gmail IMAP connection failed for Homes.com: {e}")
+        return None, 0, 0
+
+    return report_url, total_views, leads
+
+
+def fetch_brokerbay_feedback():    """
     Secure IMAP connection to Gmail to extract BrokerBay feedback emails.
     Flexible: Search only for SUBJECT "Feedback Submitted", then filter for property locally.
     Overwrites feedbackLog with most recent matching feedback entries.
@@ -786,7 +909,7 @@ def fetch_fallback_stats():
 # DATA.JS UPDATE
 # ============================================================================
 
-def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count=0, brokerbay_feedback=None):
+def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count=0, brokerbay_feedback=None, homes_report_url=None, homes_total_views=0, homes_leads=0):
     """
     Update data.js syndicationStats block with fetched ListTrac data and BrokerBay feedback.
     
@@ -887,6 +1010,32 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
             if content != old_content:
                 print(f"    -> feedbackLog: {len(brokerbay_feedback)} entries (added)")
     
+    # Update Homes.com Elite Stats (homesComStats block)
+    if homes_total_views > 0:
+        old_content = content
+        content = re.sub(r'(homesComStats:\s*\{[^}]*totalViews:\s*)\d+', f'\\g<1>{homes_total_views}', content, flags=re.DOTALL)
+        if content != old_content:
+            print(f"    -> homesComStats.totalViews: {homes_total_views}")
+    if homes_leads > 0:
+        old_content = content
+        content = re.sub(r'(homesComStats:\s*\{[^}]*leads:\s*)\d+', f'\\g<1>{homes_leads}', content, flags=re.DOTALL)
+        if content != old_content:
+            print(f"    -> homesComStats.leads: {homes_leads}")
+    if homes_report_url:
+        old_content = content
+        content = re.sub(
+            r"(homesComStats:\s*\{[^}]*reportUrl:\s*')[^']*(')",
+            f"\\g<1>{homes_report_url}\\2",
+            content, flags=re.DOTALL
+        )
+        content = re.sub(
+            r'(homesComStats:\s*\{[^}]*reportUrl:\s*")[^"]*(")',
+            f'\\g<1>{homes_report_url}\\2',
+            content, flags=re.DOTALL
+        )
+        if content != old_content:
+            print(f"    -> homesComStats.reportUrl: {homes_report_url}")
+
     # Update Last Sync Date - handles both 'quoted' and "double-quoted" strings
     current_date = datetime.now().strftime('%B %d, %Y')
     current_date = re.sub(r' 0(\d),', r' \1,', current_date)  # Remove leading zero from day
@@ -950,6 +1099,11 @@ def main():
     print("\n  --- BROKERBAY FEEDBACK EXTRACTION ---")
     brokerbay_count, brokerbay_feedback = fetch_brokerbay_feedback()
 
+    # Step 4: Fetch Homes.com Elite Performance Stats
+    print("\n  --- HOMES.COM WEEKLY REPORT EXTRACTION ---")
+    homes_report_url, homes_total_views, homes_leads = fetch_homes_com_stats()
+    print(f"  [INFO] Homes.com: URL={homes_report_url}, Views={homes_total_views}, Leads={homes_leads}")
+
     scraped_count = int(brokerbay_count or 0)
     existing_count = read_existing_brokerbay_count()
 
@@ -971,9 +1125,10 @@ def main():
     
     print("=" * 60)
     
-    # Step 4: Update data.js if we have any valid data
+    # Step 5: Update data.js if we have any valid data
     if lifetime_views > 0 or views_30day > 0 or favorites >= 0 or brokerbay_count > 0:
-        last_date = update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count, brokerbay_feedback)
+        last_date = update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count, brokerbay_feedback,
+                                   homes_report_url=homes_report_url, homes_total_views=homes_total_views, homes_leads=homes_leads)
         print("Sync Successful!")
         print(f"   - Lifetime Views: {lifetime_views}")
         print(f"   - 30-Day Views: {views_30day}")
@@ -984,6 +1139,8 @@ def main():
             print(f"   - Top City: {top_cities[0].get('name', 'N/A')} ({top_cities[0].get('views', 0)} views)")
         print(f"   - BrokerBay Showings: {brokerbay_count}")
         print(f"   - Feedback Entries: {len(brokerbay_feedback) if brokerbay_feedback else 0}")
+        print(f"   - Homes.com Views: {homes_total_views}")
+        print(f"   - Homes.com Leads: {homes_leads}")
         print(f"   - Updated On: {last_date}")
     else:
         print("Sync completed but no data found.")
@@ -997,6 +1154,8 @@ def main():
     print(f"Final Favorites: {favorites}  [listTracInquiries]")
     print(f"Final BrokerBay Showings: {brokerbay_count}  [brokerBayShowings]")
     print(f"Final Feedback Entries: {len(brokerbay_feedback) if brokerbay_feedback else 0}  [feedbackLog]")
+    print(f"Final Homes.com Views: {homes_total_views}  [homesComStats.totalViews]")
+    print(f"Final Homes.com Leads: {homes_leads}  [homesComStats.leads]")
 
 
 if __name__ == '__main__':

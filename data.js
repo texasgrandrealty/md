@@ -121,6 +121,22 @@ const propertyData = {
     aesthetic2: "Breathtaking Springtime patio views",
     aesthetic3: "Immaculate condition throughout.",
     
+    // Homes.com Elite Performance Data
+    // AUTOMATED FIELDS (sync_stats.py fills these from Homes.com Weekly Report email):
+    //   reportUrl, totalViews, leads, featuredSites
+    homesComStats: {
+        reportUrl: 'https://www.homes.com',
+        totalViews: 0,
+        leads: 0,
+        featuredSites: [
+            { name: 'The Wall Street Journal', logo: 'wsj' },
+            { name: 'Mansion Global', logo: 'mansion-global' },
+            { name: "Barron's", logo: 'barrons' },
+            { name: 'MarketWatch', logo: 'marketwatch' },
+            { name: 'Penta', logo: 'penta' }
+        ]
+    },
+
     // Reporting Links for Transparency Command Center
     reportingLinks: {
         'infographic': 'https://www.texasgrandrealty.com',

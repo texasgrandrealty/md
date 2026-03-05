@@ -2300,6 +2300,21 @@ function refreshLiveIntelligence() {
         if (document.getElementById('stat-listtrac-views')) document.getElementById('stat-listtrac-views').innerText = stats.listTracTotalViews;
         if (document.getElementById('stat-zillow-saves')) document.getElementById('stat-zillow-saves').innerText = stats.zillowSaves;
 
+        // Update Homes.com views on Scoreboard banner
+        var homesStats = propertyData.homesComStats;
+        if (homesStats) {
+            var homesViews = Number(homesStats.totalViews) || 0;
+            var homesLeads = Number(homesStats.leads) || 0;
+            var hEl = document.getElementById('stat-homescom-views');
+            if (hEl) hEl.innerText = homesViews > 0 ? numberFormat.format(homesViews) : '--';
+            var hCardViews = document.getElementById('homescom-total-views');
+            if (hCardViews) hCardViews.innerText = homesViews > 0 ? numberFormat.format(homesViews) : '--';
+            var hCardLeads = document.getElementById('homescom-leads');
+            if (hCardLeads) hCardLeads.innerText = homesLeads > 0 ? homesLeads : '--';
+            var hReportLink = document.getElementById('homescom-report-link');
+            if (hReportLink && homesStats.reportUrl) hReportLink.href = homesStats.reportUrl;
+        }
+
         // Update Views and Saves on Live Intel tab
         var formattedViews = numberFormat.format(Number(stats.listTracTotalViews) || 0);
         var formattedSaves = numberFormat.format(Number(stats.zillowSaves) || 0);
