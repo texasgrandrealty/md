@@ -383,21 +383,32 @@ def fetch_homes_com_stats():
     """
     Secure IMAP connection to Gmail to extract Homes.com Weekly Report emails.
     Searches for subject "Homes.com Weekly Report", extracts the unique listing URL,
-    then scrapes Views and Leads from the report page.
-    Returns (report_url, total_views, leads).
+    then scrapes Views, Leads, Social Retargeting, and Broker Support site counts.
+
+    Social Retargeting block (from report page):
+        Views  : ad impressions served to retargeted users   (e.g. 171)
+        Sites  : number of premium publisher sites in network (e.g. 70)
+        Users  : unique retargeted users reached              (e.g. 38)
+
+    Broker Support:
+        homesComBrokerSites : count of broker/agent portal sites carrying the listing
+                              (distinct from the premium retargeting publisher network)
+
+    Returns (report_url, total_views, leads, retargeting_views, retargeting_sites,
+             retargeting_users, broker_sites).
     """
     print("  [INFO] Connecting to Gmail IMAP for Homes.com Weekly Report...")
 
     if BeautifulSoup is None:
         print("  [WARN] BeautifulSoup not available - skipping Homes.com stats extraction")
-        return None, 0, 0, 0, 0, 0
+        return None, 0, 0, 0, 0, 0, 0
 
     email_address = os.getenv('REPORTING_EMAIL')
     app_password = os.getenv('REPORTING_APP_PASSWORD')
 
     if not email_address or not app_password:
         print("  [ERROR] Missing email credentials for Homes.com fetch")
-        return None, 0, 0, 0, 0, 0
+        return None, 0, 0, 0, 0, 0, 0
 
     report_url = None
     total_views = 0
@@ -405,6 +416,7 @@ def fetch_homes_com_stats():
     retargeting_views = 0
     retargeting_sites = 0
     retargeting_users = 0
+    broker_sites = 0
 
     try:
         mail = imaplib.IMAP4_SSL('imap.gmail.com')
@@ -417,7 +429,7 @@ def fetch_homes_com_stats():
             print("  [WARN] No Homes.com Weekly Report emails found")
             mail.close()
             mail.logout()
-            return None, 0, 0, 0, 0, 0
+            return None, 0, 0, 0, 0, 0, 0
 
         message_ids = messages[0].split()
         print(f"  [DEBUG] Found {len(message_ids)} Homes.com Weekly Report email(s)")
@@ -457,14 +469,12 @@ def fetch_homes_com_stats():
                     print("  [DEBUG] No Homes.com listing URL found in email body")
                     continue  # Try next (older) email
 
-                # Attempt to scrape views and leads from report URL
+                # Attempt to scrape views, leads, retargeting, and broker sites from report URL
                 try:
                     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
                     resp = requests.get(report_url, headers=headers, timeout=15)
                     if resp.status_code == 200:
                         soup = BeautifulSoup(resp.text, 'html.parser')
-
-                        # Pattern: look for "Views" and "Leads" stat blocks
                         page_text = soup.get_text(separator=' ', strip=True)
 
                         # Views extraction
@@ -485,9 +495,10 @@ def fetch_homes_com_stats():
                             leads = int(leads_match.group(1).replace(',', ''))
                             print(f"  [DEBUG] Homes.com Leads: {leads}")
 
-                        # Retargeting block extraction
-                        # The Homes.com report contains a "Retargeting" section with
-                        # Views, Sites, and Users counts — scan for the block.
+                        # ── Social Retargeting block ─────────────────────────────
+                        # Homes.com report contains a "Retargeting" section with
+                        # Views (ad impressions), Sites (publisher network count),
+                        # and Users (unique retargeted buyers reached).
                         retarget_block = re.search(
                             r'Retarget(?:ing)?[\s\S]{0,400}?(\d[\d,]*)\s*Views?[\s\S]{0,200}?(\d[\d,]*)\s*Sites?[\s\S]{0,200}?(\d[\d,]*)\s*Users?',
                             page_text, re.IGNORECASE
@@ -513,6 +524,29 @@ def fetch_homes_com_stats():
                                 else:
                                     print("  [DEBUG] Retargeting block found but no numeric matches")
 
+                        # ── Broker Support: site count ───────────────────────────
+                        # Homes.com reports how many broker/agent sites are distributing
+                        # the listing. Pattern varies — try "X Sites" near "Broker" or
+                        # "Agent" headings, or a standalone distribution count block.
+                        broker_section = re.search(
+                            r'(?:Broker|Agent|Distribution|Partner)\s*(?:Sites?|Network|Count)?[\s\S]{0,300}?(\d[\d,]*)\s*(?:Sites?|Portals?|Networks?)',
+                            page_text, re.IGNORECASE
+                        )
+                        if broker_section:
+                            broker_sites = int(broker_section.group(1).replace(',', ''))
+                            print(f"  [DEBUG] Broker Support Sites: {broker_sites}")
+                        else:
+                            # Fallback: look for a "X broker sites" or "listed on X" pattern
+                            bk_match = re.search(
+                                r'listed\s+on\s+(\d[\d,]*)\s*(?:broker|agent|partner)?\s*sites?',
+                                page_text, re.IGNORECASE
+                            )
+                            if bk_match:
+                                broker_sites = int(bk_match.group(1).replace(',', ''))
+                                print(f"  [DEBUG] Broker Support Sites (fallback): {broker_sites}")
+                            else:
+                                print("  [DEBUG] Broker Support site count not found in report")
+
                         if total_views > 0 or leads > 0 or retargeting_views > 0:
                             break  # Successful extraction from this email
                     else:
@@ -529,12 +563,73 @@ def fetch_homes_com_stats():
 
     except Exception as e:
         print(f"  [ERROR] Gmail IMAP connection failed for Homes.com: {e}")
-        return None, 0, 0, 0, 0, 0
+        return None, 0, 0, 0, 0, 0, 0
 
-    return report_url, total_views, leads, retargeting_views, retargeting_sites, retargeting_users
+    return report_url, total_views, leads, retargeting_views, retargeting_sites, retargeting_users, broker_sites
 
 
-def fetch_brokerbay_feedback():
+# ============================================================================
+# FACEBOOK / META INSIGHTS API — PLACEHOLDER (Token Pending Activation)
+# ============================================================================
+
+def fetch_facebook_insights():
+    """
+    Meta Insights API integration for Paid Performance (Card C).
+
+    FIELDS TARGETED:
+        facebookreach  -> syndicationStats.facebookPaidReach  (impressions served)
+        facebookspend  -> syndicationStats.facebookPaidSpend  (total USD spent)
+
+    ACTIVATION CHECKLIST:
+      1. Create a Facebook App at developers.facebook.com
+      2. Request the `ads_read` permission for the App
+      3. Generate a long-lived Page/Ad Account access token
+      4. Store token as GitHub Actions secret: FB_ACCESS_TOKEN
+      5. Set the Ad Account ID as: FB_AD_ACCOUNT_ID  (format: act_XXXXXXXXXX)
+      6. Uncomment the live API call block below and remove the placeholder return
+
+    ENDPOINT (Graph API v19.0):
+        GET https://graph.facebook.com/v19.0/{ad_account_id}/insights
+            ?fields=impressions,spend
+            &date_preset=lifetime
+            &access_token={token}
+
+    NOTES:
+      - impressions maps to facebookPaidReach (total ad impressions)
+      - spend      maps to facebookPaidSpend  (formatted as "$X,XXX" string)
+      - Rate limit: 200 calls/hour per token — daily cron is well within limits
+    """
+    print("  [INFO] Facebook Insights: Token pending activation — returning placeholder zeros")
+
+    fb_token      = os.getenv('FB_ACCESS_TOKEN')
+    fb_account_id = os.getenv('FB_AD_ACCOUNT_ID')
+
+    if not fb_token or not fb_account_id:
+        print("  [WARN] FB_ACCESS_TOKEN or FB_AD_ACCOUNT_ID not set — skipping Meta Insights fetch")
+        return 0, '--'
+
+    # ── LIVE API CALL (uncomment when token is active) ──────────────────────
+    # try:
+    #     endpoint = f"https://graph.facebook.com/v19.0/{fb_account_id}/insights"
+    #     params = {
+    #         'fields': 'impressions,spend',
+    #         'date_preset': 'lifetime',
+    #         'access_token': fb_token,
+    #     }
+    #     response = requests.get(endpoint, params=params, timeout=15)
+    #     response.raise_for_status()
+    #     data = response.json().get('data', [{}])[0]
+    #     impressions = int(data.get('impressions', 0))
+    #     spend_raw   = float(data.get('spend', 0))
+    #     spend_str   = f"{spend_raw:,.2f}"          # e.g. "1,234.56"
+    #     print(f"  [DEBUG] Meta Insights: reach={impressions}, spend=${spend_str}")
+    #     return impressions, spend_str
+    # except Exception as e:
+    #     print(f"  [ERROR] Meta Insights API call failed: {e}")
+    #     return 0, '--'
+
+    # Placeholder until token is activated
+    return 0, '--'
     """
     Secure IMAP connection to Gmail to extract BrokerBay feedback emails.
     Flexible: Search only for SUBJECT "Feedback Submitted", then filter for property locally.
@@ -941,18 +1036,21 @@ def fetch_fallback_stats():
 # DATA.JS UPDATE
 # ============================================================================
 
-def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count=0, brokerbay_feedback=None, homes_report_url=None, homes_total_views=0, homes_leads=0, homes_retargeting_views=0, homes_retargeting_sites=0, homes_retargeting_users=0):
+def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count=0, brokerbay_feedback=None, homes_report_url=None, homes_total_views=0, homes_leads=0, homes_retargeting_views=0, homes_retargeting_sites=0, homes_retargeting_users=0, homes_broker_sites=0, fb_paid_reach=0, fb_paid_spend='--'):
     """
     Update data.js syndicationStats block with fetched ListTrac data and BrokerBay feedback.
     
     Mapping:
-      - lifetime_views  -> listTracTotalViews
-      - views_30day     -> listTracViews30Days  
-      - favorites       -> listTracInquiries
-      - top_websites    -> listTracTopWebsites (array of {name, views})
-      - top_cities      -> listTracTopCities (array of {name, views})
-      - brokerbay_count -> brokerBayShowings
-      - brokerbay_feedback -> propertyData.feedbackLog (new field)
+      - lifetime_views       -> listTracTotalViews
+      - views_30day          -> listTracViews30Days  
+      - favorites            -> listTracInquiries
+      - top_websites         -> listTracTopWebsites (array of {name, views})
+      - top_cities           -> listTracTopCities (array of {name, views})
+      - brokerbay_count      -> brokerBayShowings
+      - brokerbay_feedback   -> propertyData.feedbackLog
+      - homes_broker_sites   -> homesComStats.homesComBrokerSites
+      - fb_paid_reach        -> syndicationStats.facebookPaidReach
+      - fb_paid_spend        -> syndicationStats.facebookPaidSpend
     """
     with open(DATA_JS_PATH, 'r', encoding='utf-8') as f:
         content = f.read()
@@ -1085,6 +1183,35 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
         if content != old_content:
             print(f"    -> homesComRetargetingUsers: {homes_retargeting_users}")
 
+    # Update Homes.com Broker Support site count (homesComBrokerSites)
+    if homes_broker_sites > 0:
+        old_content = content
+        if 'homesComBrokerSites:' in content:
+            content = re.sub(r'(homesComBrokerSites:\s*)\d+', f'\\g<1>{homes_broker_sites}', content)
+        else:
+            # Insert after homesComRetargetingUsers line
+            content = re.sub(
+                r'(homesComRetargetingUsers:\s*\d+)',
+                f'\\g<1>,\n        homesComBrokerSites: {homes_broker_sites}',
+                content
+            )
+        if content != old_content:
+            print(f"    -> homesComBrokerSites: {homes_broker_sites}")
+
+    # Update Facebook / Meta Paid Performance fields
+    # facebookPaidReach: only update when a real value is returned (token active)
+    if fb_paid_reach > 0:
+        old_content = content
+        content = re.sub(r'(facebookPaidReach:\s*)\d+', f'\\g<1>{fb_paid_reach}', content)
+        if content != old_content:
+            print(f"    -> facebookPaidReach: {fb_paid_reach}")
+    if fb_paid_spend != '--':
+        old_content = content
+        content = re.sub(r"(facebookPaidSpend:\s*)'[^']*'", f"\\g<1>'{fb_paid_spend}'", content)
+        content = re.sub(r'(facebookPaidSpend:\s*)"[^"]*"', f'\\g<1>"{fb_paid_spend}"', content)
+        if content != old_content:
+            print(f"    -> facebookPaidSpend: {fb_paid_spend}")
+
     # Update Last Sync Date - handles both 'quoted' and "double-quoted" strings
     current_date = datetime.now().strftime('%B %d, %Y')
     current_date = re.sub(r' 0(\d),', r' \1,', current_date)  # Remove leading zero from day
@@ -1150,8 +1277,13 @@ def main():
 
     # Step 4: Fetch Homes.com Elite Performance Stats
     print("\n  --- HOMES.COM WEEKLY REPORT EXTRACTION ---")
-    homes_report_url, homes_total_views, homes_leads, homes_retargeting_views, homes_retargeting_sites, homes_retargeting_users = fetch_homes_com_stats()
-    print(f"  [INFO] Homes.com: URL={homes_report_url}, Views={homes_total_views}, Leads={homes_leads}, RetargetViews={homes_retargeting_views}, RetargetSites={homes_retargeting_sites}, RetargetUsers={homes_retargeting_users}")
+    homes_report_url, homes_total_views, homes_leads, homes_retargeting_views, homes_retargeting_sites, homes_retargeting_users, homes_broker_sites = fetch_homes_com_stats()
+    print(f"  [INFO] Homes.com: URL={homes_report_url}, Views={homes_total_views}, Leads={homes_leads}, RetargetViews={homes_retargeting_views}, RetargetSites={homes_retargeting_sites}, RetargetUsers={homes_retargeting_users}, BrokerSites={homes_broker_sites}")
+
+    # Step 5: Fetch Facebook / Meta Paid Performance (placeholder until token active)
+    print("\n  --- FACEBOOK / META INSIGHTS (PAID PERFORMANCE) ---")
+    fb_paid_reach, fb_paid_spend = fetch_facebook_insights()
+    print(f"  [INFO] Meta Insights: PaidReach={fb_paid_reach}, PaidSpend={fb_paid_spend}")
 
     scraped_count = int(brokerbay_count or 0)
     existing_count = read_existing_brokerbay_count()
@@ -1178,7 +1310,9 @@ def main():
     if lifetime_views > 0 or views_30day > 0 or favorites >= 0 or brokerbay_count > 0:
         last_date = update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count, brokerbay_feedback,
                                    homes_report_url=homes_report_url, homes_total_views=homes_total_views, homes_leads=homes_leads,
-                                   homes_retargeting_views=homes_retargeting_views, homes_retargeting_sites=homes_retargeting_sites, homes_retargeting_users=homes_retargeting_users)
+                                   homes_retargeting_views=homes_retargeting_views, homes_retargeting_sites=homes_retargeting_sites,
+                                   homes_retargeting_users=homes_retargeting_users, homes_broker_sites=homes_broker_sites,
+                                   fb_paid_reach=fb_paid_reach, fb_paid_spend=fb_paid_spend)
         print("Sync Successful!")
         print(f"   - Lifetime Views: {lifetime_views}")
         print(f"   - 30-Day Views: {views_30day}")
@@ -1192,6 +1326,7 @@ def main():
         print(f"   - Homes.com Views: {homes_total_views}")
         print(f"   - Homes.com Leads: {homes_leads}")
         print(f"   - Retargeting Views: {homes_retargeting_views}, Sites: {homes_retargeting_sites}, Users: {homes_retargeting_users}")
+        print(f"   - Broker Support Sites: {homes_broker_sites}")
         print(f"   - Updated On: {last_date}")
     else:
         print("Sync completed but no data found.")
@@ -1208,6 +1343,9 @@ def main():
     print(f"Final Homes.com Views: {homes_total_views}  [homesComStats.totalViews]")
     print(f"Final Homes.com Leads: {homes_leads}  [homesComStats.leads]")
     print(f"Final Retargeting: Views={homes_retargeting_views} Sites={homes_retargeting_sites} Users={homes_retargeting_users}  [homesComStats.homesComRetargeting*]")
+    print(f"Final Broker Support Sites: {homes_broker_sites}  [homesComStats.homesComBrokerSites]")
+    print(f"Final Facebook Paid Reach: {fb_paid_reach}  [syndicationStats.facebookPaidReach]")
+    print(f"Final Facebook Paid Spend: {fb_paid_spend}  [syndicationStats.facebookPaidSpend]")
 
 
 if __name__ == '__main__':

@@ -2282,6 +2282,15 @@ function calculateFunnelHealth() {
 }
 
 // --- LIVE INTELLIGENCE ENGINE ---
+// Data Source Map:
+//   CARD A (Awareness)       : ListTrac totalViews + Homes.com totalViews
+//   CARD B (Engagement)      : Zillow saves (manual) + ListTrac inquiries
+//   CARD C (Paid Performance): Meta Insights API — facebookPaidReach / facebookPaidSpend
+//   CARD D (Social Retarget) : Homes.com homesComRetargeting{Views,Sites,Users}
+//   CARD E (Agent Activity)  : BrokerBay showings + MLS reverse-prospect matches
+//   CARD F (Broker Support)  : ListTrac top-websites count + Homes.com featuredSites count
+//   CARD G (Performance)     : Computed funnel health score
+//   CARD H (Conversions)     : BrokerBay showings (physical) + MLS reverse-prospect
 function refreshLiveIntelligence() {
     try {
         const stats = propertyData.syndicationStats;
@@ -2290,26 +2299,38 @@ function refreshLiveIntelligence() {
         const homesStats = propertyData.homesComStats || {};
         var setEl = function(id, value) { var el = document.getElementById(id); if (el) el.innerText = value; };
 
-        // ── Derived aggregates ──────────────────────────────────────────────
+        // ── CARD A: AWARENESS — ListTrac + Homes.com combined reach ────────
         const listTracViews  = Number(stats.listTracTotalViews) || 0;
         const homesViews     = Number(homesStats.totalViews)    || 0;
-        const combinedViews  = listTracViews + homesViews;
+        const combinedViews  = listTracViews + homesViews;      // Cross-platform total
+
+        // ── CARD B: ENGAGEMENT — Zillow saves + ListTrac inquiries ─────────
         const zillowSaves    = Number(stats.zillowSaves)        || 0;
-        const inquiries      = Number(stats.listTracInquiries)  || 0;
-        const finalShowings  = Math.max(Number(stats.brokerBayShowings) || 0, 1);
-        const mlsMatches     = Number(stats.mlsReverseProspectMatches) || 0;
+        const inquiries      = Number(stats.listTracInquiries)  || 0; // ListTrac aggregate
+
+        // ── CARD C: PAID PERFORMANCE — Meta Insights API placeholder ───────
+        // Token pending activation. Fields: facebookPaidReach, facebookPaidSpend
         const fbPaidReach    = Number(stats.facebookPaidReach)  || 0;
         const fbPaidSpend    = stats.facebookPaidSpend || '--';
 
-        // Retargeting (Homes.com)
+        // ── CARD D: SOCIAL RETARGETING — Homes.com Premium retarget block ──
         const rtViews  = Number(homesStats.homesComRetargetingViews)  || 0;
         const rtSites  = Number(homesStats.homesComRetargetingSites)  || 0;
         const rtUsers  = Number(homesStats.homesComRetargetingUsers)  || 0;
 
-        // Broker/Agent site aggregation:
-        //   ListTrac top-website count + Homes.com featuredSites count
+        // ── CARD E & H: AGENT / CONVERSION — BrokerBay showings ───────────
+        const finalShowings  = Math.max(Number(stats.brokerBayShowings) || 0, 1);
+        const mlsMatches     = Number(stats.mlsReverseProspectMatches) || 0;
+
+        // ── CARD F: BROKER SUPPORT — ListTrac sites + Homes.com sites ──────
+        // listTracTopWebsites: agent/broker portals tracked by ListTrac
+        // homesComBrokerSites: broker-specific site count from Homes.com report
+        // featuredSites: premium publisher network (fallback count)
         const listTracSiteCount  = Array.isArray(stats.listTracTopWebsites) ? stats.listTracTopWebsites.length : 0;
-        const homesSiteCount     = Array.isArray(homesStats.featuredSites)  ? homesStats.featuredSites.length  : 0;
+        const homesComBrokerSites = Number(homesStats.homesComBrokerSites) || 0;
+        const homesSiteCount     = homesComBrokerSites > 0
+            ? homesComBrokerSites
+            : (Array.isArray(homesStats.featuredSites) ? homesStats.featuredSites.length : 0);
         const brokerSiteTotal    = listTracSiteCount + homesSiteCount;
 
         // ── CARD A: AWARENESS ───────────────────────────────────────────────
