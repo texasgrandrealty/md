@@ -2404,12 +2404,6 @@ function refreshLiveIntelligence() {
             var el = document.getElementById(id);
             if (el) el.innerText = finalShowings;
         });
-
-        // ── Homes.com views on Scoreboard banner ────────────────────────────
-        if (homesViews > 0) {
-            var hEl = document.getElementById('stat-homescom-views');
-            if (hEl) hEl.innerText = numberFormat.format(homesViews);
-        }
         var homesLeads = Number(homesStats.leads) || 0;
         var hCardViews = document.getElementById('homescom-total-views');
         if (hCardViews) hCardViews.innerText = homesViews > 0 ? numberFormat.format(homesViews) : '--';
@@ -2421,12 +2415,19 @@ function refreshLiveIntelligence() {
         // ── Top Websites list ───────────────────────────────────────────────
         var websitesList = document.getElementById('live-top-websites');
         if (websitesList && Array.isArray(stats.listTracTopWebsites)) {
-            websitesList.innerHTML = stats.listTracTopWebsites.map(function(site) {
+            var websiteRows = stats.listTracTopWebsites.map(function(site) {
                 return '<li class="flex justify-between items-center text-sm">' +
                     '<span class="text-slate-300">' + site.name + '</span>' +
                     '<span class="text-white font-bold">' + numberFormat.format(site.views) + '</span>' +
                     '</li>';
             }).join('');
+            // Inject Homes.com as a permanent row using homesComStats.totalViews
+            var homesRowViews = homesViews > 0 ? numberFormat.format(homesViews) : '--';
+            websiteRows += '<li class="flex justify-between items-center text-sm border-t border-slate-700 pt-3 mt-3">' +
+                '<span class="text-emerald-300 font-semibold">Homes.com</span>' +
+                '<span class="text-white font-bold">' + homesRowViews + '</span>' +
+                '</li>';
+            websitesList.innerHTML = websiteRows;
         }
 
         // ── Top Cities list ─────────────────────────────────────────────────

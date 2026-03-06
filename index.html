@@ -385,20 +385,20 @@
                                 </svg>
                             </button>
                             <div class="nav-tabs-container space-x-1 pb-1 px-12" id="nav-tabs-container">
-                                <button id="nav-summary" class="nav-btn active" onclick="showTab('summary', this)">Overview / Executive Summary</button>
-                                <button id="nav-decision-path" class="nav-btn" onclick="showTab('decision-path', this)">Roadmap / Decision Path</button>
-                                <button id="nav-property" class="nav-btn" onclick="showTab('property', this)">Asset / Property Details</button>
-                                <button id="nav-local" class="nav-btn" onclick="showTab('local', this)">Territory / Local Market</button>
-                                <button id="nav-comps" class="nav-btn" onclick="showTab('comps', this)">Intelligence / Comps</button>
-                                <button id="nav-rpr" class="nav-btn" onclick="showTab('rpr', this)">Valuation / Value &amp; Equity</button>
-                                <button id="nav-strategy-metrics" class="nav-btn" onclick="showTab('strategy-metrics', this)">Positioning / Pricing Strategy</button>
-                                <button id="nav-campaign" class="nav-btn" onclick="showTab('campaign', this)">Exposure / Marketing Strategy</button>
-                                <button id="nav-live-intel" class="nav-btn" onclick="showTab('live-intel', this)">Awareness / Total Views</button>
-                                <button id="nav-rates" class="nav-btn" onclick="showTab('rates', this)">Capital / Rates &amp; Financing</button>
-                                <button id="nav-liquidity" class="nav-btn" onclick="showTab('liquidity', this)">Velocity / Liquidity</button>
-                                <button id="nav-incentives" class="nav-btn" onclick="showTab('options', this)">Leverage / Incentives</button>
-                                <button id="nav-documents" class="nav-btn" onclick="showTab('documents', this)">Archive / Documents</button>
-                                <button id="nav-search-properties" class="nav-btn" onclick="showTab('search-properties', this)">Search / Properties</button>
+                                <button id="nav-summary" class="nav-btn active" onclick="showTab('summary', this)">Executive Summary</button>
+                                <button id="nav-property" class="nav-btn" onclick="showTab('property', this)">Property</button>
+                                <button id="nav-local" class="nav-btn" onclick="showTab('local', this)">Local Market</button>
+                                <button id="nav-strategy-metrics" class="nav-btn" onclick="showTab('strategy-metrics', this)">Pricing Strategy</button>
+                                <button id="nav-comps" class="nav-btn" onclick="showTab('comps', this)">Comps</button>
+                                <button id="nav-rpr" class="nav-btn" onclick="showTab('rpr', this)">Value and Equity</button>
+                                <button id="nav-liquidity" class="nav-btn" onclick="showTab('liquidity', this)">Liquidity</button>
+                                <button id="nav-campaign" class="nav-btn" onclick="showTab('campaign', this)">Marketing Strategy</button>
+                                <button id="nav-live-intel" class="nav-btn" onclick="showTab('live-intel', this)">Live Intelligence</button>
+                                <button id="nav-rates" class="nav-btn" onclick="showTab('rates', this)">Rates &amp; Financing</button>
+                                <button id="nav-incentives" class="nav-btn" onclick="showTab('options', this)">Incentives</button>
+                                <button id="nav-decision-path" class="nav-btn" onclick="showTab('decision-path', this)">Decision Path</button>
+                                <button id="nav-documents" class="nav-btn" onclick="showTab('documents', this)">Documents</button>
+                                <button id="nav-search-properties" class="nav-btn" onclick="showTab('search-properties', this)">Search Properties</button>
                             </div>
                             <button type="button" class="nav-arrow animate-pulse" onclick="scrollNav('right')">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -427,12 +427,6 @@
                     <div class="flex items-center gap-1">
                         <span class="text-[0.6rem] font-black text-emerald-500 uppercase tracking-widest">Showings</span>
                         <span id="stat-brokerbay-showings" class="text-sm font-black text-slate-900">1</span>
-                    </div>
-                    <div class="flex items-center gap-1">
-                        <!-- Homes.com house icon -->
-                        <svg class="w-3 h-3 text-emerald-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h4a1 1 0 001-1v-3h2v3a1 1 0 001 1h4a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
-                        <span class="text-[0.6rem] font-black text-emerald-600 uppercase tracking-widest">Homes</span>
-                        <span id="stat-homescom-views" class="text-sm font-black text-slate-900">--</span>
                     </div>
                     <div class="flex items-center gap-2 ml-auto">
                         <p id="stat-funnel-status" class="text-[0.6rem] text-slate-400 hidden md:block">Calculating...</p>
@@ -1809,8 +1803,7 @@
                                 <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-blue-300">AWARENESS</h4>
                             </div>
                             <span id="intel-awareness-total" class="text-4xl font-black text-white mb-1">--</span>
-                            <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Combined Views</span>
-                            <span class="text-slate-600 text-[0.55rem] mt-1">ListTrac + Homes.com</span>
+                            <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Total Views</span>
                         </div>
 
                         <!-- CARD B: ENGAGEMENT -->
@@ -1820,30 +1813,28 @@
                                 <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-yellow-300">ENGAGEMENT</h4>
                             </div>
                             <span id="intel-engagement-saves" class="text-4xl font-black text-white mb-1">--</span>
-                            <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Zillow Saves</span>
-                            <span id="intel-engagement-inquiries" class="text-slate-500 text-[0.55rem] mt-1">-- inquiries</span>
+                            <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Detail Page Views</span>
                         </div>
 
                         <!-- CARD C: PAID PERFORMANCE -->
                         <div class="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col items-center text-center">
                             <div class="flex items-center gap-2 mb-3">
                                 <span class="text-pink-400 text-lg">&#128176;</span>
-                                <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-pink-300">PAID PERF.</h4>
+                                <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-pink-300">SOCIAL MEDIA</h4>
                             </div>
                             <span id="intel-paid-reach" class="text-4xl font-black text-white mb-1">--</span>
-                            <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">FB Paid Reach</span>
-                            <span id="intel-paid-spend" class="text-slate-500 text-[0.55rem] mt-1">$-- spend</span>
+                            <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Paid Performance Campaign</span>
                         </div>
 
                         <!-- CARD D: SOCIAL RETARGETING -->
                         <div class="bg-slate-900 rounded-2xl p-5 border border-violet-800/50 shadow-xl flex flex-col items-center text-center">
                             <div class="flex items-center gap-2 mb-3">
                                 <span class="text-violet-400 text-lg">&#127758;</span>
-                                <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-violet-300">RETARGETING</h4>
+                                <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-violet-300">SOCIAL RETARGETING</h4>
                             </div>
-                            <span id="intel-retargeting-views" class="text-4xl font-black text-white mb-1">--</span>
-                            <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Ad Views</span>
-                            <span id="intel-retargeting-sites" class="text-slate-500 text-[0.55rem] mt-1">-- sites · <span id="intel-retargeting-users">--</span> users</span>
+                            <span id="intel-retargeting-views" class="text-4xl font-black text-white mb-1">171</span>
+                            <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Paid Retargeting Campaigns</span>
+                            <span class="text-slate-500 text-[0.55rem] mt-1">Sites: 70 &middot; Users: 38</span>
                         </div>
 
                         <!-- CARD E: AGENT ACTIVITY -->
@@ -1853,8 +1844,7 @@
                                 <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-orange-300">AGENT ACTIVITY</h4>
                             </div>
                             <span id="intel-agent-showings" class="text-4xl font-black text-white mb-1">1</span>
-                            <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Showings</span>
-                            <span id="intel-agent-inquiries" class="text-slate-500 text-[0.55rem] mt-1">-- MLS inquiries</span>
+                            <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">MLS Buyer Interest</span>
                         </div>
 
                         <!-- CARD F: BROKER SUPPORT -->
@@ -1864,8 +1854,7 @@
                                 <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-emerald-300">BROKER SUPPORT</h4>
                             </div>
                             <span id="intel-broker-sites" class="text-4xl font-black text-white mb-1">--</span>
-                            <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Broker/Agent Sites</span>
-                            <span class="text-slate-600 text-[0.55rem] mt-1">ListTrac + Homes.com</span>
+                            <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Co-Marketing Broker Sites</span>
                         </div>
 
                         <!-- CARD G: PERFORMANCE -->
@@ -1875,7 +1864,7 @@
                                 <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-sky-300">PERFORMANCE</h4>
                             </div>
                             <span id="intel-performance-pct" class="text-4xl font-black text-white mb-1">--%</span>
-                            <span id="intel-performance-status" class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Funnel Health</span>
+                            <span id="intel-performance-status" class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Buyer Favorites</span>
                             <div class="w-full bg-slate-700 rounded-full h-1.5 mt-2 overflow-hidden">
                                 <div id="intel-performance-bar" class="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full transition-all duration-700" style="width: 0%"></div>
                             </div>
@@ -1888,8 +1877,7 @@
                                 <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-emerald-300">CONVERSIONS</h4>
                             </div>
                             <span id="intel-conversions-showings" class="text-4xl font-black text-white mb-1">1</span>
-                            <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Physical Showings</span>
-                            <span id="intel-conversions-matches" class="text-slate-500 text-[0.55rem] mt-1">-- reverse prospect</span>
+                            <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Showings</span>
                         </div>
 
                     </div>
