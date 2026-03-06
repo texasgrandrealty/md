@@ -2300,9 +2300,10 @@ function refreshLiveIntelligence() {
         var setEl = function(id, value) { var el = document.getElementById(id); if (el) el.innerText = value; };
 
         // ── CARD A: AWARENESS — ListTrac + Homes.com combined reach ────────
-        const listTracViews  = Number(stats.listTracTotalViews) || 0;
-        const homesViews     = Number(homesStats.totalViews)    || 0;
-        const combinedViews  = listTracViews + homesViews;      // Cross-platform total
+        const listTracViews          = Number(stats.listTracTotalViews) || 0;
+        const homesViews             = Number(homesStats.totalViews)    || 0;
+        const totalConsolidatedViews = listTracViews + homesViews;      // Cross-platform total
+        const combinedViews          = totalConsolidatedViews;          // Alias for downstream usage
 
         // ── CARD B: ENGAGEMENT — Zillow saves + ListTrac inquiries ─────────
         const zillowSaves    = Number(stats.zillowSaves)        || 0;
@@ -2334,7 +2335,7 @@ function refreshLiveIntelligence() {
         const brokerSiteTotal    = listTracSiteCount + homesSiteCount;
 
         // ── CARD A: AWARENESS ───────────────────────────────────────────────
-        setEl('intel-awareness-total', combinedViews > 0 ? numberFormat.format(combinedViews) : '--');
+        setEl('intel-awareness-total', totalConsolidatedViews > 0 ? numberFormat.format(totalConsolidatedViews) : '--');
 
         // ── CARD B: ENGAGEMENT ──────────────────────────────────────────────
         setEl('intel-engagement-saves',    zillowSaves > 0  ? numberFormat.format(zillowSaves) : '--');
@@ -2396,7 +2397,7 @@ function refreshLiveIntelligence() {
 
         // ── SLIM HEADER BANNER — Combined Totals ────────────────────────────
         // "Views" = listTrac + Homes.com combined; "Saves" = Zillow saves
-        setEl('stat-listtrac-views',    combinedViews > 0 ? numberFormat.format(combinedViews) : '--');
+        setEl('stat-listtrac-views',    totalConsolidatedViews > 0 ? numberFormat.format(totalConsolidatedViews) : '--');
         setEl('stat-zillow-saves',      zillowSaves > 0   ? numberFormat.format(zillowSaves)   : '--');
 
         // Showings (Scoreboard + legacy Live Intel IDs)

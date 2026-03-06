@@ -735,7 +735,7 @@
                                 <span class="text-xs opacity-75">Aerial Perspective</span>
                             </button>
                             
-                            <button onclick="openCarousel('virtual')" class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-4 rounded-xl shadow-lg hover:scale-105 transition-transform duration-200 flex flex-col items-center gap-2">
+                            <button onclick="openCarousel('virtual')" disabled class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-4 rounded-xl shadow-lg hover:scale-105 transition-transform duration-200 flex flex-col items-center gap-2 grayscale opacity-50 cursor-not-allowed">
                                 <div class="w-8 h-8 mb-2">
                                     <svg fill="currentColor" viewBox="0 0 20 20" class="w-full h-full">
                                         <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm8 0a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V8z" clip-rule="evenodd"/>
@@ -1489,7 +1489,7 @@
                                         class="w-full h-full object-cover aspect-video"
                                         loading="lazy"
                                     />
-                                    <button type="button" onclick="openCarousel('virtual')" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-full bg-blue-600/90 hover:bg-blue-700 text-white text-[10px] font-bold uppercase tracking-widest shadow-2xl transition-all duration-200">
+                                    <button type="button" onclick="openCarousel('virtual')" disabled class="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-full bg-blue-600/90 hover:bg-blue-700 text-white text-[10px] font-bold uppercase tracking-widest shadow-2xl transition-all duration-200 grayscale opacity-50 cursor-not-allowed">
                                         View Virtual Staging
                                     </button>
                                 </div>
@@ -1668,18 +1668,17 @@
                             </div>
                         </div>
 
-                        <!-- CARD 7: Social Retargeting (Homes.com Premium) -->
+                        <!-- CARD 7: Seller Social Ad Placement -->
                         <div class="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col h-full">
                             <!-- Header -->
                             <div class="p-6 bg-slate-900/95 border-b border-slate-700 h-[160px] flex flex-col justify-start">
                                 <div class="flex items-center gap-3 mb-3">
-                                    <!-- Retargeting / signal icon -->
                                     <svg class="w-7 h-7 text-violet-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M5.05 3.636a1 1 0 010 1.414 7 7 0 000 9.9 1 1 0 11-1.414 1.414 9 9 0 010-12.728 1 1 0 011.414 0zm9.9 0a1 1 0 011.414 0 9 9 0 010 12.728 1 1 0 11-1.414-1.414 7 7 0 000-9.9 1 1 0 010-1.414zM7.879 6.464a1 1 0 010 1.414 3 3 0 000 4.243 1 1 0 11-1.415 1.414 5 5 0 010-7.07 1 1 0 011.415 0zm4.242 0a1 1 0 011.415 0 5 5 0 010 7.072 1 1 0 01-1.415-1.415 3 3 0 000-4.242 1 1 0 010-1.415zM10 9a1 1 0 110 2 1 1 0 010-2z" clip-rule="evenodd"/>
                                     </svg>
-                                    <h3 class="text-xl font-bold text-white">Social Retargeting <span class="text-violet-400">(Homes.com Premium)</span></h3>
+                                    <h3 class="text-xl font-bold text-white">Seller Social Ad <span class="text-violet-400">Placement</span></h3>
                                 </div>
-                                <p class="text-sm text-slate-300 leading-relaxed line-clamp-3">Dynamic ad placement across 70+ premium sites, ensuring your asset follows high-intent buyers across their digital journey.</p>
+                                <p class="text-sm text-slate-300 leading-relaxed line-clamp-3">Dynamic retargeting ad placement across 70+ premium publisher sites — your listing follows high-intent buyers across their digital journey.</p>
                             </div>
 
                             <!-- Body -->
@@ -1689,49 +1688,49 @@
                                 <div class="grid grid-cols-3 gap-3">
                                     <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 flex flex-col items-center text-center">
                                         <span id="retargeting-views" class="text-3xl font-black text-violet-300 mb-1">171</span>
-                                        <span class="text-[0.55rem] font-bold text-slate-400 uppercase tracking-wider leading-tight">Views</span>
+                                        <span class="text-[0.55rem] font-bold text-slate-400 uppercase tracking-wider leading-tight">Ad Views</span>
                                     </div>
                                     <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 flex flex-col items-center text-center">
                                         <span id="retargeting-sites" class="text-3xl font-black text-violet-300 mb-1">70</span>
-                                        <span class="text-[0.55rem] font-bold text-slate-400 uppercase tracking-wider leading-tight">Sites</span>
+                                        <span class="text-[0.55rem] font-bold text-slate-400 uppercase tracking-wider leading-tight">Placements</span>
                                     </div>
                                     <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 flex flex-col items-center text-center">
                                         <span id="retargeting-users" class="text-3xl font-black text-violet-300 mb-1">38</span>
-                                        <span class="text-[0.55rem] font-bold text-slate-400 uppercase tracking-wider leading-tight">Users</span>
+                                        <span class="text-[0.55rem] font-bold text-slate-400 uppercase tracking-wider leading-tight">Users Reached</span>
                                     </div>
                                 </div>
 
-                                <!-- Premium Publisher Logo Grid -->
+                                <!-- Placement Icon Grid -->
                                 <div>
-                                    <p class="text-[0.6rem] font-black uppercase tracking-[0.18em] text-slate-500 mb-3">Placement Network Includes</p>
-                                    <div class="grid grid-cols-3 gap-2">
+                                    <p class="text-[0.6rem] font-black uppercase tracking-[0.18em] text-slate-500 mb-3">Placement Network</p>
+                                    <div class="max-h-64 overflow-y-auto grid grid-cols-4 gap-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent pr-1">
                                         <!-- Fox News -->
                                         <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
                                             <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <text x="0" y="15" font-family="Arial Black,Arial" font-weight="900" font-size="14" fill="#003DA5">FOX</text>
                                             </svg>
-                                            <span class="text-[0.5rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Fox News</span>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Fox News</span>
                                         </div>
                                         <!-- ESPN -->
                                         <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
                                             <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <text x="0" y="15" font-family="Arial Black,Arial" font-weight="900" font-size="13" fill="#d00">ESPN</text>
                                             </svg>
-                                            <span class="text-[0.5rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">ESPN</span>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">ESPN</span>
                                         </div>
                                         <!-- CNN -->
                                         <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
                                             <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <text x="2" y="15" font-family="Arial Black,Arial" font-weight="900" font-size="13" fill="#cc0001">CNN</text>
                                             </svg>
-                                            <span class="text-[0.5rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">CNN</span>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">CNN</span>
                                         </div>
                                         <!-- NY Times -->
                                         <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
                                             <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <text x="0" y="15" font-family="Georgia,serif" font-weight="700" font-size="11" fill="#ffffff">NYT</text>
                                             </svg>
-                                            <span class="text-[0.5rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">NY Times</span>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">NY Times</span>
                                         </div>
                                         <!-- USA Today -->
                                         <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
@@ -1739,21 +1738,116 @@
                                                 <text x="0" y="14" font-family="Arial Black,Arial" font-weight="900" font-size="9" fill="#009bde">USA</text>
                                                 <text x="0" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="6" fill="#009bde">TODAY</text>
                                             </svg>
-                                            <span class="text-[0.5rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">USA Today</span>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">USA Today</span>
                                         </div>
                                         <!-- Weather.com -->
                                         <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
-                                            <svg class="w-7 h-5" viewBox="0 0 24 24" fill="currentColor" class="text-sky-400" xmlns="http://www.w3.org/2000/svg">
+                                            <svg class="w-7 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <path fill="#38bdf8" d="M4 12a5 5 0 0110 0H17a3 3 0 010 6H4a3 3 0 010-6z"/>
                                             </svg>
-                                            <span class="text-[0.5rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Weather.com</span>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Weather</span>
                                         </div>
-                                    </div>
-                                    <p class="text-[0.5rem] text-slate-600 text-center mt-2 italic">+64 additional premium publisher sites</p>
-                                    <!-- Scrollable Full Publisher List -->
-                                    <div class="mt-3 max-h-24 overflow-y-auto rounded-xl bg-slate-950/60 border border-slate-800 px-3 py-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
-                                        <p class="text-[0.5rem] font-black uppercase tracking-[0.15em] text-slate-500 mb-1.5">Full Network — 70+ Sites</p>
-                                        <p class="text-[0.5rem] text-slate-400 leading-relaxed">Fox News · ESPN · CNN · NY Times · Wall Street Journal · USA Today · Weather.com · ABC News · NBC News · CBS News · MSNBC · Fortune · Forbes · Bloomberg · Business Insider · The Atlantic · Time · Newsweek · US News · Washington Post · Los Angeles Times · Chicago Tribune · Boston Globe · SF Chronicle · Dallas Morning News · Houston Chronicle · Miami Herald · Denver Post · Seattle Times · Minneapolis Star Tribune · Detroit Free Press · Philadelphia Inquirer · Atlanta Journal-Constitution · Orlando Sentinel · Tampa Bay Times · Arizona Republic · Las Vegas Review · Portland Oregonian · Sacramento Bee · Raleigh News &amp; Observer · Charlotte Observer · Nashville Tennessean · Memphis Commercial Appeal · New Orleans Times-Picayune · Indianapolis Star · Columbus Dispatch · Cleveland.com · Cincinnati Enquirer · Louisville Courier · Kansas City Star · St. Louis Post-Dispatch · Omaha World-Herald · Des Moines Register · Milwaukee Journal Sentinel · Richmond Times-Dispatch · Norfolk Virginian-Pilot · Hartford Courant · Providence Journal · Albany Times Union · Buffalo News · Rochester Democrat &amp; Chronicle · Syracuse Post-Standard · Albuquerque Journal · Tucson Star · El Paso Times · San Antonio Express · Austin American-Statesman · Fort Worth Star-Telegram</p>
+                                        <!-- ABC News -->
+                                        <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
+                                            <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <text x="0" y="15" font-family="Arial Black,Arial" font-weight="900" font-size="13" fill="#00a7e0">ABC</text>
+                                            </svg>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">ABC News</span>
+                                        </div>
+                                        <!-- NBC News -->
+                                        <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
+                                            <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <text x="0" y="15" font-family="Arial Black,Arial" font-weight="900" font-size="13" fill="#fa7a35">NBC</text>
+                                            </svg>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">NBC News</span>
+                                        </div>
+                                        <!-- Forbes -->
+                                        <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
+                                            <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <text x="0" y="15" font-family="Georgia,serif" font-weight="700" font-size="11" fill="#e8173f">Forbes</text>
+                                            </svg>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Forbes</span>
+                                        </div>
+                                        <!-- Bloomberg -->
+                                        <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
+                                            <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <text x="0" y="15" font-family="Arial Black,Arial" font-weight="900" font-size="8" fill="#ff7200">Bloomberg</text>
+                                            </svg>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Bloomberg</span>
+                                        </div>
+                                        <!-- Fortune -->
+                                        <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
+                                            <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <text x="0" y="15" font-family="Georgia,serif" font-weight="700" font-size="10" fill="#e8173f">Fortune</text>
+                                            </svg>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Fortune</span>
+                                        </div>
+                                        <!-- WSJ -->
+                                        <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
+                                            <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <text x="0" y="15" font-family="Georgia,serif" font-weight="700" font-size="11" fill="#ffffff">WSJ</text>
+                                            </svg>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Wall St. J.</span>
+                                        </div>
+                                        <!-- Business Insider -->
+                                        <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
+                                            <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <text x="0" y="15" font-family="Arial Black,Arial" font-weight="900" font-size="9" fill="#1860d4">Insider</text>
+                                            </svg>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Biz Insider</span>
+                                        </div>
+                                        <!-- Time -->
+                                        <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
+                                            <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <text x="2" y="15" font-family="Arial Black,Arial" font-weight="900" font-size="13" fill="#e8173f">TIME</text>
+                                            </svg>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Time</span>
+                                        </div>
+                                        <!-- Newsweek -->
+                                        <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
+                                            <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <text x="0" y="15" font-family="Georgia,serif" font-weight="700" font-size="9" fill="#ffffff">NWSWK</text>
+                                            </svg>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Newsweek</span>
+                                        </div>
+                                        <!-- Washington Post -->
+                                        <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
+                                            <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <text x="0" y="15" font-family="Georgia,serif" font-weight="700" font-size="11" fill="#ffffff">WAPO</text>
+                                            </svg>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Wash. Post</span>
+                                        </div>
+                                        <!-- LA Times -->
+                                        <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
+                                            <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <text x="0" y="15" font-family="Arial Black,Arial" font-weight="900" font-size="12" fill="#ffffff">LAT</text>
+                                            </svg>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">LA Times</span>
+                                        </div>
+                                        <!-- Chicago Tribune -->
+                                        <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
+                                            <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <text x="0" y="15" font-family="Arial Black,Arial" font-weight="900" font-size="10" fill="#e8173f">TRIB</text>
+                                            </svg>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Chi. Tribune</span>
+                                        </div>
+                                        <!-- Dallas Morning News -->
+                                        <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
+                                            <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <text x="0" y="15" font-family="Arial Black,Arial" font-weight="900" font-size="10" fill="#0057a8">DMN</text>
+                                            </svg>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Dallas News</span>
+                                        </div>
+                                        <!-- Houston Chronicle -->
+                                        <div class="bg-slate-800 rounded-xl px-2 py-2 flex flex-col items-center justify-center gap-1 border border-slate-700 hover:border-violet-600 transition-colors">
+                                            <svg class="w-7 h-5" viewBox="0 0 56 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <text x="0" y="15" font-family="Arial Black,Arial" font-weight="900" font-size="11" fill="#0057a8">HChr</text>
+                                            </svg>
+                                            <span class="text-[0.45rem] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Houston Chr.</span>
+                                        </div>
+                                        <div class="col-span-4 flex items-center justify-center py-1">
+                                            <span class="text-[0.5rem] text-slate-600 italic">+50 additional premium publisher sites</span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1834,13 +1928,19 @@
                                 <span class="text-violet-400 text-lg">&#127758;</span>
                                 <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-violet-300">Social Retargeting <span class="text-slate-500">/</span> Network</h4>
                             </div>
-                            <span id="intel-retargeting-views" class="text-4xl font-black text-white mb-1">171</span>
-                            <div class="flex gap-3 mt-1">
-                                <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Views: <span class="text-white font-black">171</span></span>
-                                <span class="text-slate-600">·</span>
-                                <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Sites: <span class="text-white font-black">70</span></span>
-                                <span class="text-slate-600">·</span>
-                                <span class="text-slate-400 text-[0.6rem] font-semibold uppercase tracking-wide">Users: <span class="text-white font-black">38</span></span>
+                            <div class="w-full grid grid-cols-3 gap-1.5 mt-1">
+                                <div class="flex flex-col items-center bg-violet-950/60 rounded-xl py-2 px-1 border border-violet-800/40">
+                                    <span id="intel-retargeting-views" class="text-2xl font-black text-white leading-none">171</span>
+                                    <span class="text-[0.5rem] font-bold text-violet-300 uppercase tracking-wider mt-1 leading-tight">Ad Views</span>
+                                </div>
+                                <div class="flex flex-col items-center bg-violet-950/60 rounded-xl py-2 px-1 border border-violet-800/40">
+                                    <span id="intel-retargeting-sites" class="text-2xl font-black text-white leading-none">70</span>
+                                    <span class="text-[0.5rem] font-bold text-violet-300 uppercase tracking-wider mt-1 leading-tight">Placements</span>
+                                </div>
+                                <div class="flex flex-col items-center bg-violet-950/60 rounded-xl py-2 px-1 border border-violet-800/40">
+                                    <span id="intel-retargeting-users" class="text-2xl font-black text-white leading-none">38</span>
+                                    <span class="text-[0.5rem] font-bold text-violet-300 uppercase tracking-wider mt-1 leading-tight">Users Reached</span>
+                                </div>
                             </div>
                         </div>
 
