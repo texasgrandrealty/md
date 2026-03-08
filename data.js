@@ -130,7 +130,7 @@ const propertyData = {
     //   homesComRetargetingViews, homesComRetargetingSites, homesComRetargetingUsers
     homesComStats: {
         reportUrl: 'https://www.homes.com',
-        totalViews: 0,
+        totalViews: 4465,
         leads: 0,
         // Retargeting block — AUTOMATED from Homes.com Weekly Report
         homesComRetargetingViews: 171,

@@ -423,8 +423,8 @@ def fetch_homes_com_stats():
         mail.login(email_address, app_password)
         mail.select('inbox')
 
-        print('  [DEBUG] IMAP search: looking for SUBJECT "Homes.com Weekly Report"')
-        status, messages = mail.search(None, '(SUBJECT "Homes.com Weekly Report")')
+        print('  [DEBUG] IMAP search: looking for SUBJECT "Homes.com Weekly Report" BODY "109 Kelli"')
+        status, messages = mail.search(None, '(SUBJECT "Homes.com Weekly Report" BODY "109 Kelli")')
         if status != 'OK' or not messages[0].strip():
             print("  [WARN] No Homes.com Weekly Report emails found")
             mail.close()
@@ -459,15 +459,31 @@ def fetch_homes_com_stats():
                     elif ct == "text/plain":
                         body_text = email_message.get_payload(decode=True).decode('utf-8', errors='ignore')
 
-                # Extract Homes.com listing URL from the email body
+                # Extract the "See the Full Report" tracking URL from the AMP email HTML.
+                # The email contains an <a> tag whose visible text is exactly
+                # "See the Full Report" and whose href is a homes.com click-tracker URL.
                 search_text = html_content or body_text
-                url_match = re.search(r'https?://www\.homes\.com/[^\s\'"<>]+', search_text)
-                if url_match:
-                    report_url = url_match.group(0).rstrip('.,;)')
-                    print(f"  [DEBUG] Found Homes.com report URL: {report_url}")
+                amp_link_match = re.search(
+                    r'<a[^>]+href=["\']'
+                    r'(https://click\.email\.homes\.com/[^\s\'"<>]+)'
+                    r'["\'][^>]*>\s*See the Full Report\s*</a>',
+                    search_text, re.IGNORECASE | re.DOTALL
+                )
+                if amp_link_match:
+                    report_url = amp_link_match.group(1)
+                    print(f"  [DEBUG] Found Homes.com Full Report AMP link: {report_url}")
                 else:
-                    print("  [DEBUG] No Homes.com listing URL found in email body")
-                    continue  # Try next (older) email
+                    # Fallback: any click.email.homes.com tracking URL
+                    fallback_match = re.search(
+                        r'https://click\.email\.homes\.com/\?qs=[^\s\'"<>]+',
+                        search_text
+                    )
+                    if fallback_match:
+                        report_url = fallback_match.group(0).rstrip('.,;)')
+                        print(f"  [DEBUG] Found Homes.com click-tracker URL (fallback): {report_url}")
+                    else:
+                        print("  [DEBUG] No Homes.com Full Report link found in email body")
+                        continue  # Try next (older) email
 
                 # Attempt to scrape views, leads, retargeting, and broker sites from report URL
                 try:
