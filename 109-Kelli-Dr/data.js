@@ -94,6 +94,7 @@ const propertyData = {
         fbSpend: '--',
         // Paid Social (MANUAL entry — update after each Facebook campaign)
         facebookPaidReach: 0,
+        facebookImpressions: 0,
         facebookPaidSpend: '--',
         
         // Mid Funnel: Engagement (AUTOMATED from ListTrac)

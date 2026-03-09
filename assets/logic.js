@@ -2334,11 +2334,11 @@ function refreshLiveIntelligence() {
         const inquiries      = Number(stats.listTracInquiries)  || 0; // ListTrac aggregate
 
         // ── CARD C: SOCIAL PERFORMANCE — Facebook 4-metric grid ────────────
-        // Impressions = facebookPaidReach (paid campaign impressions)
+        // Impressions = facebookImpressions (canonical key, mirrors paid campaign impressions)
         // Reach       = facebookReach (organic + paid unique reach)
         // Page Views  = facebookClicks (link clicks / page views)
         // Hook Rate   = facebookHookRate if available, else default 30%
-        const fbImpressions  = Number(stats.facebookPaidReach)  || 0;
+        const fbImpressions  = Number(stats.facebookImpressions || stats.facebookPaidReach) || 0;
         const fbReach        = Number(stats.facebookReach)       || 0;
         const fbClicks       = Number(stats.facebookClicks)      || 0;
         const fbHookRate     = stats.facebookHookRate            || '30%';
@@ -2375,9 +2375,9 @@ function refreshLiveIntelligence() {
         setEl('intel-engagement-inquiries', inquiries + ' inquiries');
 
         // ── CARD C: SOCIAL PERFORMANCE — Facebook 4-item grid ──────────────
-        setEl('intel-fb-impressions', fbImpressions > 0 ? numberFormat.format(fbImpressions) : '--');
-        setEl('intel-fb-reach',       fbReach       > 0 ? numberFormat.format(fbReach)       : '--');
-        setEl('intel-fb-views',       fbClicks      > 0 ? numberFormat.format(fbClicks)      : '--');
+        setEl('intel-fb-impressions', stats.facebookImpressions || '--');
+        setEl('intel-fb-reach',       stats.facebookReach       || '--');
+        setEl('intel-fb-views',       stats.facebookClicks      || '--');
         setEl('intel-fb-hook',        fbHookRate);
         // Legacy single-display IDs kept for backward compatibility
         setEl('intel-paid-reach', fbImpressions > 0 ? numberFormat.format(fbImpressions) : '--');
@@ -2488,6 +2488,7 @@ function refreshLiveIntelligence() {
         var feedbackBody = document.getElementById('live-feedback-body');
         if (feedbackBody) {
             var feedbackLog = propertyData.feedbackLog;
+            const feedbackCount = propertyData.feedbackLog ? propertyData.feedbackLog.length : 0;
             var pill = document.getElementById('live-feedback-count-pill');
 
             if (!Array.isArray(feedbackLog) || feedbackLog.length === 0) {
@@ -2496,7 +2497,7 @@ function refreshLiveIntelligence() {
                     '<tr><td colspan="3" class="px-8 py-10 text-center text-slate-400 italic text-sm">' +
                     'Awaiting verified feedback.</td></tr>';
             } else {
-                if (pill) pill.textContent = feedbackLog.length + ' Total Entr' + (feedbackLog.length === 1 ? 'y' : 'ies');
+                if (pill) pill.textContent = `${feedbackCount} Total ${feedbackCount === 1 ? 'Entry' : 'Entries'}`;
                 feedbackBody.innerHTML = '';
                 feedbackLog.forEach(function(entry) {
                     var pillColor = entry.interest === 'Interested'

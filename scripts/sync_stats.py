@@ -1181,10 +1181,11 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
       - brokerbay_count      -> brokerBayShowings (floor: never below 1)
       - brokerbay_feedback   -> propertyData.feedbackLog
       - homes_broker_sites   -> homesComStats.homesComBrokerSites
-      - fb_paid_reach        -> syndicationStats.facebookPaidReach  (impressions)
+      - fb_paid_reach        -> syndicationStats.facebookPaidReach    (legacy paid impressions)
+      - fb_paid_reach        -> syndicationStats.facebookImpressions (canonical impressions key)
       - fb_paid_spend        -> syndicationStats.facebookPaidSpend
-      - fb_reach             -> syndicationStats.facebookReach      (unique reach)
-      - fb_clicks            -> syndicationStats.facebookClicks     (page views / clicks)
+      - fb_reach             -> syndicationStats.facebookReach        (unique reach)
+      - fb_clicks            -> syndicationStats.facebookClicks       (page views / clicks)
       - agent_activity       -> propertyData.agentActivity
       - campaign_start_date  -> syndicationStats.campaignStartDate
     """
@@ -1357,6 +1358,20 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
         content = re.sub(r'(facebookPaidReach:\s*)\d+', f'\\g<1>{fb_paid_reach}', content)
         if content != old_content:
             print(f"    -> facebookPaidReach: {fb_paid_reach}")
+    # facebookImpressions: canonical impressions key (mirrors fb_paid_reach / Meta impressions)
+    if fb_paid_reach > 0:
+        old_content = content
+        if 'facebookImpressions:' in content:
+            content = re.sub(r'(facebookImpressions:\s*)\d+', f'\\g<1>{fb_paid_reach}', content)
+        else:
+            # Insert immediately after facebookPaidReach line
+            content = re.sub(
+                r'(facebookPaidReach:\s*\d+)',
+                f'\\g<1>,\n        facebookImpressions: {fb_paid_reach}',
+                content
+            )
+        if content != old_content:
+            print(f"    -> facebookImpressions: {fb_paid_reach}")
     if fb_paid_spend != '--':
         old_content = content
         content = re.sub(r"(facebookPaidSpend:\s*)'[^']*'", f"\\g<1>'{fb_paid_spend}'", content)
@@ -1540,6 +1555,7 @@ def main():
     print(f"Final Retargeting: Views={homes_retargeting_views} Sites={homes_retargeting_sites} Users={homes_retargeting_users}  [homesComStats.homesComRetargeting*]")
     print(f"Final Broker Support Sites: {homes_broker_sites}  [homesComStats.homesComBrokerSites]")
     print(f"Final Facebook Paid Reach: {fb_paid_reach}  [syndicationStats.facebookPaidReach]")
+    print(f"Final Facebook Impressions: {fb_paid_reach}  [syndicationStats.facebookImpressions]")
     print(f"Final Facebook Paid Spend: {fb_paid_spend}  [syndicationStats.facebookPaidSpend]")
     print(f"Final Facebook Reach:      {fb_reach}       [syndicationStats.facebookReach]")
     print(f"Final Facebook Clicks:     {fb_clicks}      [syndicationStats.facebookClicks]")
