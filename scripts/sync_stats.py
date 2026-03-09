@@ -32,6 +32,7 @@ with open(config_path, 'r', encoding='utf-8') as _cfg_file:
 
 PROPERTY_SEARCH_KEY = _config['search_key']
 MLS_DETAILS_URL = _config.get('mls_details_url', '')
+CAMPAIGN_START_DATE = _config.get('campaign_start_date', '')
 
 DATA_JS_PATH = os.path.join(target_folder, 'data.js')
 
@@ -1159,7 +1160,7 @@ def fetch_mls_agent_activity(target_url):
 # DATA.JS UPDATE
 # ============================================================================
 
-def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count=0, brokerbay_feedback=None, homes_report_url=None, homes_total_views=0, homes_leads=0, homes_retargeting_views=0, homes_retargeting_sites=0, homes_retargeting_users=0, homes_broker_sites=0, fb_paid_reach=0, fb_paid_spend='--', agent_activity=0):
+def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count=0, brokerbay_feedback=None, homes_report_url=None, homes_total_views=0, homes_leads=0, homes_retargeting_views=0, homes_retargeting_sites=0, homes_retargeting_users=0, homes_broker_sites=0, fb_paid_reach=0, fb_paid_spend='--', agent_activity=0, campaign_start_date=''):
     """
     Update data.js syndicationStats block with fetched ListTrac data and BrokerBay feedback.
     
@@ -1175,6 +1176,7 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
       - fb_paid_reach        -> syndicationStats.facebookPaidReach
       - fb_paid_spend        -> syndicationStats.facebookPaidSpend
       - agent_activity       -> propertyData.agentActivity
+      - campaign_start_date  -> syndicationStats.campaignStartDate
     """
     with open(DATA_JS_PATH, 'r', encoding='utf-8') as f:
         content = f.read()
@@ -1352,6 +1354,25 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
         if content != old_content:
             print(f"    -> facebookPaidSpend: {fb_paid_spend}")
 
+    # Update Campaign Start Date (campaignStartDate) — only write when provided
+    if campaign_start_date:
+        old_content = content
+        if 'campaignStartDate:' in content:
+            content = re.sub(
+                r"(campaignStartDate:\s*)['\"][^'\"]*['\"]",
+                f'\\g<1>"{campaign_start_date}"',
+                content
+            )
+        else:
+            # Insert after facebookPaidSpend or facebookPaidReach line
+            content = re.sub(
+                r'(facebookPaidSpend:\s*[\'"][^\'"]*[\'"])',
+                f'\\g<1>,\n        campaignStartDate: "{campaign_start_date}"',
+                content
+            )
+        if content != old_content:
+            print(f"    -> campaignStartDate: {campaign_start_date}")
+
     # Update Last Sync Date - handles both 'quoted' and "double-quoted" strings
     current_date = datetime.now().strftime('%B %d, %Y')
     current_date = re.sub(r' 0(\d),', r' \1,', current_date)  # Remove leading zero from day
@@ -1458,7 +1479,7 @@ def main():
                                    homes_retargeting_views=homes_retargeting_views, homes_retargeting_sites=homes_retargeting_sites,
                                    homes_retargeting_users=homes_retargeting_users, homes_broker_sites=homes_broker_sites,
                                    fb_paid_reach=fb_paid_reach, fb_paid_spend=fb_paid_spend,
-                                   agent_activity=agent_activity)
+                                   agent_activity=agent_activity, campaign_start_date=CAMPAIGN_START_DATE)
         print("Sync Successful!")
         print(f"   - Lifetime Views: {lifetime_views}")
         print(f"   - 30-Day Views: {views_30day}")
