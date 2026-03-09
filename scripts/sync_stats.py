@@ -31,6 +31,7 @@ with open(config_path, 'r', encoding='utf-8') as _cfg_file:
     _config = json.load(_cfg_file)
 
 PROPERTY_SEARCH_KEY = _config['search_key']
+MLS_DETAILS_URL = _config.get('mls_details_url', '')
 
 DATA_JS_PATH = os.path.join(target_folder, 'data.js')
 
@@ -606,34 +607,31 @@ def fetch_homes_com_stats():
 # FACEBOOK / META INSIGHTS API — PLACEHOLDER (Token Pending Activation)
 # ============================================================================
 
-def fetch_facebook_insights():
+def fetch_facebook_insights(search_key):
     """
-    Meta Insights API integration for Paid Performance (Card C).
+    Meta Marketing API — search all Campaigns in the Ad Account whose name
+    contains `search_key` (e.g. "109 Kelli"), then sum impressions and spend
+    across every matching campaign.
 
-    FIELDS TARGETED:
-        facebookreach  -> syndicationStats.facebookPaidReach  (impressions served)
-        facebookspend  -> syndicationStats.facebookPaidSpend  (total USD spent)
+    Environment variables required:
+        FB_ACCESS_TOKEN  — long-lived User or System-User token with ads_read
+        FB_AD_ACCOUNT_ID — format: act_XXXXXXXXXX
 
-    ACTIVATION CHECKLIST:
-      1. Create a Facebook App at developers.facebook.com
-      2. Request the `ads_read` permission for the App
-      3. Generate a long-lived Page/Ad Account access token
-      4. Store token as GitHub Actions secret: FB_ACCESS_TOKEN
-      5. Set the Ad Account ID as: FB_AD_ACCOUNT_ID  (format: act_XXXXXXXXXX)
-      6. Uncomment the live API call block below and remove the placeholder return
+    Returns (total_impressions: int, total_spend_str: str)
+        e.g. (4821, "312.47")
+    On any error or missing credentials returns (0, '--').
 
-    ENDPOINT (Graph API v19.0):
-        GET https://graph.facebook.com/v19.0/{ad_account_id}/insights
-            ?fields=impressions,spend
-            &date_preset=lifetime
-            &access_token={token}
-
-    NOTES:
-      - impressions maps to facebookPaidReach (total ad impressions)
-      - spend      maps to facebookPaidSpend  (formatted as "$X,XXX" string)
-      - Rate limit: 200 calls/hour per token — daily cron is well within limits
+    Graph API flow:
+      1. GET /{ad_account_id}/campaigns
+             ?fields=name,insights{impressions,spend}
+             &date_preset=lifetime
+             &limit=500
+             &access_token=...
+      2. Filter campaigns whose name contains search_key (case-insensitive).
+      3. Sum impressions + spend from each matching campaign's insights node.
+      4. Paginate using the 'next' cursor until all campaigns are fetched.
     """
-    print("  [INFO] Facebook Insights: Token pending activation — returning placeholder zeros")
+    print(f"  [INFO] Fetching Facebook Insights for search_key='{search_key}'...")
 
     fb_token      = os.getenv('FB_ACCESS_TOKEN')
     fb_account_id = os.getenv('FB_AD_ACCOUNT_ID')
@@ -642,28 +640,61 @@ def fetch_facebook_insights():
         print("  [WARN] FB_ACCESS_TOKEN or FB_AD_ACCOUNT_ID not set — skipping Meta Insights fetch")
         return 0, '--'
 
-    # ── LIVE API CALL (uncomment when token is active) ──────────────────────
-    # try:
-    #     endpoint = f"https://graph.facebook.com/v19.0/{fb_account_id}/insights"
-    #     params = {
-    #         'fields': 'impressions,spend',
-    #         'date_preset': 'lifetime',
-    #         'access_token': fb_token,
-    #     }
-    #     response = requests.get(endpoint, params=params, timeout=15)
-    #     response.raise_for_status()
-    #     data = response.json().get('data', [{}])[0]
-    #     impressions = int(data.get('impressions', 0))
-    #     spend_raw   = float(data.get('spend', 0))
-    #     spend_str   = f"{spend_raw:,.2f}"          # e.g. "1,234.56"
-    #     print(f"  [DEBUG] Meta Insights: reach={impressions}, spend=${spend_str}")
-    #     return impressions, spend_str
-    # except Exception as e:
-    #     print(f"  [ERROR] Meta Insights API call failed: {e}")
-    #     return 0, '--'
+    total_impressions = 0
+    total_spend       = 0.0
+    matched_campaigns = 0
 
-    # Placeholder until token is activated
-    return 0, '--'
+    try:
+        endpoint = f"https://graph.facebook.com/v19.0/{fb_account_id}/campaigns"
+        params = {
+            'fields': 'name,insights{impressions,spend}',
+            'date_preset': 'lifetime',
+            'limit': 500,
+            'access_token': fb_token,
+        }
+
+        page_num = 0
+        while endpoint:
+            page_num += 1
+            response = requests.get(endpoint, params=params, timeout=20)
+            response.raise_for_status()
+            payload  = response.json()
+
+            campaigns = payload.get('data', [])
+            print(f"  [DEBUG] FB page {page_num}: {len(campaigns)} campaign(s) returned")
+
+            for campaign in campaigns:
+                name = campaign.get('name', '')
+                if search_key.lower() not in name.lower():
+                    continue  # Not this property
+
+                matched_campaigns += 1
+                insights_wrapper = campaign.get('insights', {})
+                insights_data    = insights_wrapper.get('data', [])
+                for row in insights_data:
+                    imp   = int(row.get('impressions', 0) or 0)
+                    spend = float(row.get('spend', 0) or 0)
+                    total_impressions += imp
+                    total_spend       += spend
+                print(f"  [DEBUG] Matched campaign: '{name}' — impressions={imp}, spend={spend:.2f}")
+
+            # Pagination — params must be cleared after first request (cursor is embedded in 'next')
+            paging = payload.get('paging', {})
+            endpoint = paging.get('next')
+            params   = {}  # next URL already includes all params
+
+        if matched_campaigns == 0:
+            print(f"  [WARN] No Facebook campaigns matched search_key='{search_key}'")
+            return 0, '--'
+
+        spend_str = f"{total_spend:,.2f}"
+        print(f"  [DEBUG] Meta Insights total: reach={total_impressions}, spend=${spend_str} "
+              f"(across {matched_campaigns} campaign(s))")
+        return total_impressions, spend_str
+
+    except Exception as e:
+        print(f"  [ERROR] Meta Insights API call failed: {e}")
+        return 0, '--'
 
 
 def fetch_brokerbay_feedback():
@@ -1062,10 +1093,73 @@ def fetch_fallback_stats():
 
 
 # ============================================================================
+# MLS AGENT ACTIVITY — "Bulldozer" scrape of id="NumberOfViews" on MLS detail page
+# ============================================================================
+
+def fetch_mls_agent_activity(target_url):
+    """
+    Fetch the MLS Agent Activity count (the "144" value) from the property's
+    MLS details page.  The page exposes the count inside an element whose
+    id attribute is "NumberOfViews", e.g.:
+        <span id="NumberOfViews">144</span>
+
+    Strategy:
+      1. Primary  — extract_by_element_id() targets id="NumberOfViews" directly.
+      2. Fallback — Bulldozer regex: strip all HTML, find a number immediately
+                    before the label "agent views" / "NumberOfViews".
+
+    Returns int agent_activity (0 on any failure).
+    """
+    if not target_url:
+        print("  [WARN] fetch_mls_agent_activity: no mls_details_url configured — skipping")
+        return 0
+
+    print(f"  [INFO] Fetching MLS Agent Activity from: {target_url}")
+    try:
+        response = requests.get(target_url, headers=HEADERS, timeout=30)
+        response.raise_for_status()
+        html = response.text
+        print(f"  [DEBUG] MLS details page size: {len(html)} bytes")
+
+        # Primary: id-based extraction
+        val, found = extract_by_element_id(html, 'NumberOfViews')
+        if found and val > 0:
+            print(f"  [DEBUG] MLS agentActivity (id match): {val}")
+            return val
+
+        # Bulldozer fallback: strip tags, find number before known label variants
+        text = strip_all_html(html)
+        patterns = [
+            r'(\d{1,3}(?:,\d{3})*|\d+)\s*(?:Agent\s+)?(?:Views?|NumberOfViews)',
+            r'NumberOfViews\D{0,20}?(\d{1,3}(?:,\d{3})*|\d+)',
+        ]
+        for pat in patterns:
+            m = re.search(pat, text, re.IGNORECASE)
+            if m:
+                v = extract_number(m.group(1))
+                if v > 0:
+                    print(f"  [DEBUG] MLS agentActivity (bulldozer fallback): {v}")
+                    return v
+
+        print("  [WARN] MLS agentActivity: NumberOfViews not found on page")
+        return 0
+
+    except requests.exceptions.Timeout:
+        print("  [ERROR] MLS details page request timed out")
+        return 0
+    except requests.exceptions.RequestException as e:
+        print(f"  [ERROR] MLS details page request failed: {e}")
+        return 0
+    except Exception as e:
+        print(f"  [ERROR] Unexpected error in fetch_mls_agent_activity: {e}")
+        return 0
+
+
+# ============================================================================
 # DATA.JS UPDATE
 # ============================================================================
 
-def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count=0, brokerbay_feedback=None, homes_report_url=None, homes_total_views=0, homes_leads=0, homes_retargeting_views=0, homes_retargeting_sites=0, homes_retargeting_users=0, homes_broker_sites=0, fb_paid_reach=0, fb_paid_spend='--'):
+def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count=0, brokerbay_feedback=None, homes_report_url=None, homes_total_views=0, homes_leads=0, homes_retargeting_views=0, homes_retargeting_sites=0, homes_retargeting_users=0, homes_broker_sites=0, fb_paid_reach=0, fb_paid_spend='--', agent_activity=0):
     """
     Update data.js syndicationStats block with fetched ListTrac data and BrokerBay feedback.
     
@@ -1080,11 +1174,28 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
       - homes_broker_sites   -> homesComStats.homesComBrokerSites
       - fb_paid_reach        -> syndicationStats.facebookPaidReach
       - fb_paid_spend        -> syndicationStats.facebookPaidSpend
+      - agent_activity       -> propertyData.agentActivity
     """
     with open(DATA_JS_PATH, 'r', encoding='utf-8') as f:
         content = f.read()
     
     print(f"  [WRITE] Updating data.js with scraped values...")
+    
+    # Update MLS Agent Activity (agentActivity in propertyData)
+    # Writes the value when a live number was fetched; never overwrites with 0.
+    if agent_activity > 0:
+        old_content = content
+        if 'agentActivity:' in content:
+            content = re.sub(r'(agentActivity:\s*)\d+', f'\\g<1>{agent_activity}', content)
+        else:
+            # Insert as the first field inside propertyData (after opening brace)
+            content = re.sub(
+                r'(const propertyData\s*=\s*\{)',
+                f'\\g<1>\n    agentActivity: {agent_activity},',
+                content
+            )
+        if content != old_content:
+            print(f"    -> agentActivity: {agent_activity}")
     
     # Update Lifetime Views (listTracTotalViews)
     old_content = content
@@ -1309,10 +1420,15 @@ def main():
     homes_report_url, homes_total_views, homes_leads, homes_retargeting_views, homes_retargeting_sites, homes_retargeting_users, homes_broker_sites = fetch_homes_com_stats()
     print(f"  [INFO] Homes.com: URL={homes_report_url}, Views={homes_total_views}, Leads={homes_leads}, RetargetViews={homes_retargeting_views}, RetargetSites={homes_retargeting_sites}, RetargetUsers={homes_retargeting_users}, BrokerSites={homes_broker_sites}")
 
-    # Step 5: Fetch Facebook / Meta Paid Performance (placeholder until token active)
+    # Step 5: Fetch Facebook / Meta Paid Performance
     print("\n  --- FACEBOOK / META INSIGHTS (PAID PERFORMANCE) ---")
-    fb_paid_reach, fb_paid_spend = fetch_facebook_insights()
+    fb_paid_reach, fb_paid_spend = fetch_facebook_insights(PROPERTY_SEARCH_KEY)
     print(f"  [INFO] Meta Insights: PaidReach={fb_paid_reach}, PaidSpend={fb_paid_spend}")
+
+    # Step 6: Fetch MLS Agent Activity (id="NumberOfViews" on MLS detail page)
+    print("\n  --- MLS AGENT ACTIVITY ---")
+    agent_activity = fetch_mls_agent_activity(MLS_DETAILS_URL)
+    print(f"  [INFO] MLS agentActivity: {agent_activity}")
 
     scraped_count = int(brokerbay_count or 0)
     existing_count = read_existing_brokerbay_count()
@@ -1335,13 +1451,14 @@ def main():
     
     print("=" * 60)
     
-    # Step 5: Update data.js if we have any valid data
+    # Step 7: Update data.js if we have any valid data
     if lifetime_views > 0 or views_30day > 0 or favorites >= 0 or brokerbay_count > 0:
         last_date = update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count, brokerbay_feedback,
                                    homes_report_url=homes_report_url, homes_total_views=homes_total_views, homes_leads=homes_leads,
                                    homes_retargeting_views=homes_retargeting_views, homes_retargeting_sites=homes_retargeting_sites,
                                    homes_retargeting_users=homes_retargeting_users, homes_broker_sites=homes_broker_sites,
-                                   fb_paid_reach=fb_paid_reach, fb_paid_spend=fb_paid_spend)
+                                   fb_paid_reach=fb_paid_reach, fb_paid_spend=fb_paid_spend,
+                                   agent_activity=agent_activity)
         print("Sync Successful!")
         print(f"   - Lifetime Views: {lifetime_views}")
         print(f"   - 30-Day Views: {views_30day}")
@@ -1356,6 +1473,7 @@ def main():
         print(f"   - Homes.com Leads: {homes_leads}")
         print(f"   - Retargeting Views: {homes_retargeting_views}, Sites: {homes_retargeting_sites}, Users: {homes_retargeting_users}")
         print(f"   - Broker Support Sites: {homes_broker_sites}")
+        print(f"   - MLS Agent Activity: {agent_activity}")
         print(f"   - Updated On: {last_date}")
     else:
         print("Sync completed but no data found.")
@@ -1375,6 +1493,7 @@ def main():
     print(f"Final Broker Support Sites: {homes_broker_sites}  [homesComStats.homesComBrokerSites]")
     print(f"Final Facebook Paid Reach: {fb_paid_reach}  [syndicationStats.facebookPaidReach]")
     print(f"Final Facebook Paid Spend: {fb_paid_spend}  [syndicationStats.facebookPaidSpend]")
+    print(f"Final MLS Agent Activity: {agent_activity}  [propertyData.agentActivity]")
 
 
 if __name__ == '__main__':

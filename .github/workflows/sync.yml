@@ -39,6 +39,8 @@ jobs:
         env:
           REPORTING_EMAIL: ${{ secrets.REPORTING_EMAIL }}
           STATS_EMAIL_PASSWORD: ${{ secrets.STATS_EMAIL_PASSWORD }}
+          FB_ACCESS_TOKEN: ${{ secrets.FB_ACCESS_TOKEN }}
+          FB_AD_ACCOUNT_ID: ${{ secrets.FB_AD_ACCOUNT_ID }}
 
       - name: Configure Git user
         run: |
