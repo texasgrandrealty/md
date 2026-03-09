@@ -66,13 +66,7 @@ const propertyData = {
     matterportEmbedUrl: 'https://my.matterport.com/show/?m=cTSxrKFZQvR&play=1&mls=2',
     
     // BrokerBay Feedback Intelligence Log
-    feedbackLog: [
-    {
-        "date": "02/24/2026",
-        "interest": "Unknown",
-        "comments": "- Thomas Andrew Miller <info@mg2.brokerbay.com>Date: Mon, Feb 23, 2026 at 10:05 AMSubject: Feedback Submitted - 109 Kelli DRTo: <tmiller@texasgrandrealty.com>"
-    }
-],
+    feedbackLog: [],
     
     // Syndication Stats for Funnel Performance Scoreboard
     // AUTOMATED FIELDS (sync_stats.py fills these from ListTrac API):
@@ -83,10 +77,10 @@ const propertyData = {
     //   matterportWalkthroughs, brokerBayShowings, mlsReverseProspectMatches
     syndicationStats: {
         // Top Funnel: Awareness (AUTOMATED from ListTrac)
-        listTracTotalViews: 3511,
-        listTracViews30Days: 990,
-        listTracTopWebsites: [{"name": "Zillow.com", "views": 372}, {"name": "Realtor.com", "views": 285}, {"name": "portal.onehome.com", "views": 81}, {"name": "Trulia", "views": 24}, {"name": "HAR.com", "views": 12}],
-        listTracTopCities: [{"name": "Mesquite, TX", "views": 26}, {"name": "Rowlett, TX", "views": 23}, {"name": "Sulphur Springs, TX", "views": 17}, {"name": "Kilgore, TX", "views": 10}, {"name": "Longview, TX", "views": 10}],
+        listTracTotalViews: 3884,
+        listTracViews30Days: 950,
+        listTracTopWebsites: [{"name": "Zillow.com", "views": 417}, {"name": "Realtor.com", "views": 297}, {"name": "portal.onehome.com", "views": 31}, {"name": "Trulia", "views": 19}, {"name": "HAR.com", "views": 8}],
+        listTracTopCities: [{"name": "Rowlett, TX", "views": 21}, {"name": "Mesquite, TX", "views": 15}, {"name": "Sulphur Springs, TX", "views": 15}, {"name": "Greenville, TX", "views": 14}, {"name": "Kilgore, TX", "views": 7}],
         
         // Top Funnel: Awareness (MANUAL entry)
         listHubReach: 15400,
@@ -96,6 +90,7 @@ const propertyData = {
         facebookPaidReach: 0,
         facebookImpressions: 0,
         facebookPaidSpend: '--',
+        campaignStartDate: "2026-03-05",
         
         // Mid Funnel: Engagement (AUTOMATED from ListTrac)
         listTracInquiries: 8,
@@ -112,7 +107,7 @@ const propertyData = {
 
         // Metadata for the Command Center
         mlsNumber: '21178024',
-        lastSync: 'February 26, 2026'
+        lastSync: 'March 9, 2026'
     },
     cdom: 0,
     downPaymentPct: 0.20,
