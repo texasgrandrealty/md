@@ -2283,14 +2283,14 @@ function calculateFunnelHealth() {
 
 // --- LIVE INTELLIGENCE ENGINE ---
 // Data Source Map:
-//   CARD A (Awareness)       : ListTrac totalViews + Homes.com totalViews
-//   CARD B (Engagement)      : Zillow saves (manual) + ListTrac inquiries
-//   CARD C (Paid Performance): Meta Insights API — facebookPaidReach / facebookPaidSpend
-//   CARD D (Social Retarget) : Homes.com homesComRetargeting{Views,Sites,Users}
-//   CARD E (Agent Activity)  : BrokerBay showings + MLS reverse-prospect matches
-//   CARD F (Broker Support)  : ListTrac top-websites count + Homes.com featuredSites count
-//   CARD G (Performance)     : Computed funnel health score
-//   CARD H (Conversions)     : BrokerBay showings (physical) + MLS reverse-prospect
+//   CARD A (Awareness)         : ListTrac totalViews + Homes.com totalViews → combinedTotalViews
+//   CARD B (Engagement)        : Zillow saves (manual) + ListTrac inquiries
+//   CARD C (Social Performance): Facebook — facebookPaidReach/Impressions, facebookReach, facebookClicks, hookRate
+//   CARD D (Social Retarget)   : Homes.com homesComRetargeting{Views,Sites,Users}
+//   CARD E (Agent Activity)    : propertyData.agentActivity (MLS detail views)
+//   CARD F (Broker Support)    : ListTrac top-websites count + Homes.com featuredSites count
+//   CARD G (Performance)       : Computed funnel health score
+//   CARD H (Conversions)       : BrokerBay showings (physical) + MLS reverse-prospect
 function getCampaignStatus(startDateStr) {
     if (!startDateStr) return 'Deployment Ready';
     var start = new Date(startDateStr);
@@ -2326,15 +2326,23 @@ function refreshLiveIntelligence() {
         const listTracViews          = Number(stats.listTracTotalViews) || 0;
         const homesViews             = Number(homesStats.totalViews)    || 0;
         const totalConsolidatedViews = listTracViews + homesViews;      // Cross-platform total
-        const combinedViews          = totalConsolidatedViews;          // Alias for downstream usage
+        const combinedTotalViews     = totalConsolidatedViews;          // Canonical name for header banner + Card A
+        const combinedViews          = totalConsolidatedViews;          // Legacy alias for downstream usage
 
         // ── CARD B: ENGAGEMENT — Zillow saves + ListTrac inquiries ─────────
         const zillowSaves    = Number(stats.zillowSaves)        || 0;
         const inquiries      = Number(stats.listTracInquiries)  || 0; // ListTrac aggregate
 
-        // ── CARD C: PAID PERFORMANCE — Meta Insights API placeholder ───────
-        // Token pending activation. Fields: facebookPaidReach, facebookPaidSpend
-        const fbPaidReach    = Number(stats.facebookPaidReach)  || 0;
+        // ── CARD C: SOCIAL PERFORMANCE — Facebook 4-metric grid ────────────
+        // Impressions = facebookPaidReach (paid campaign impressions)
+        // Reach       = facebookReach (organic + paid unique reach)
+        // Page Views  = facebookClicks (link clicks / page views)
+        // Hook Rate   = facebookHookRate if available, else default 30%
+        const fbImpressions  = Number(stats.facebookPaidReach)  || 0;
+        const fbReach        = Number(stats.facebookReach)       || 0;
+        const fbClicks       = Number(stats.facebookClicks)      || 0;
+        const fbHookRate     = stats.facebookHookRate            || '30%';
+        const fbPaidReach    = fbImpressions;  // Legacy alias used by generateSocialNarrative
         const fbPaidSpend    = stats.facebookPaidSpend || '--';
         const campaignStartDate = stats.campaignStartDate || '';
 
@@ -2360,14 +2368,19 @@ function refreshLiveIntelligence() {
         const brokerSiteTotal    = listTracSiteCount + homesSiteCount;
 
         // ── CARD A: AWARENESS ───────────────────────────────────────────────
-        setEl('intel-awareness-total', totalConsolidatedViews > 0 ? numberFormat.format(totalConsolidatedViews) : '--');
+        setEl('intel-awareness-total', combinedTotalViews > 0 ? numberFormat.format(combinedTotalViews) : '--');
 
         // ── CARD B: ENGAGEMENT ──────────────────────────────────────────────
         setEl('intel-engagement-saves',    zillowSaves > 0  ? numberFormat.format(zillowSaves) : '--');
         setEl('intel-engagement-inquiries', inquiries + ' inquiries');
 
-        // ── CARD C: PAID PERFORMANCE ────────────────────────────────────────
-        setEl('intel-paid-reach', fbPaidReach > 0 ? numberFormat.format(fbPaidReach) : '--');
+        // ── CARD C: SOCIAL PERFORMANCE — Facebook 4-item grid ──────────────
+        setEl('intel-fb-impressions', fbImpressions > 0 ? numberFormat.format(fbImpressions) : '--');
+        setEl('intel-fb-reach',       fbReach       > 0 ? numberFormat.format(fbReach)       : '--');
+        setEl('intel-fb-views',       fbClicks      > 0 ? numberFormat.format(fbClicks)      : '--');
+        setEl('intel-fb-hook',        fbHookRate);
+        // Legacy single-display IDs kept for backward compatibility
+        setEl('intel-paid-reach', fbImpressions > 0 ? numberFormat.format(fbImpressions) : '--');
         setEl('intel-paid-spend', '$' + fbPaidSpend + ' spend');
         setEl('intel-campaign-status', getCampaignStatus(campaignStartDate));
         var socialNarrative = generateSocialNarrative(fbPaidReach);
@@ -2425,8 +2438,8 @@ function refreshLiveIntelligence() {
         setEl('intel-conversions-matches',  mlsMatches + ' reverse prospect');
 
         // ── SLIM HEADER BANNER — Combined Totals ────────────────────────────
-        // "Views" = listTrac + Homes.com combined; "Saves" = Zillow saves
-        setEl('stat-listtrac-views',    totalConsolidatedViews > 0 ? numberFormat.format(totalConsolidatedViews) : '--');
+        // "Views" = listTrac + Homes.com combined (combinedTotalViews); "Saves" = Zillow saves
+        setEl('stat-listtrac-views',    combinedTotalViews > 0 ? numberFormat.format(combinedTotalViews) : '--');
         setEl('stat-zillow-saves',      zillowSaves > 0   ? numberFormat.format(zillowSaves)   : '--');
 
         // Showings (Scoreboard + legacy Live Intel IDs)

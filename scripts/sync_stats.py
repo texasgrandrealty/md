@@ -611,27 +611,29 @@ def fetch_homes_com_stats():
 def fetch_facebook_insights(search_key):
     """
     Meta Marketing API — search all Campaigns in the Ad Account whose name
-    contains `search_key` (e.g. "109 Kelli"), then sum impressions and spend
-    across every matching campaign.
+    contains `search_key` (e.g. "109 Kelli"), then sum impressions, reach,
+    clicks, and spend across every matching campaign.
 
     Environment variables required:
         FB_ACCESS_TOKEN  — long-lived User or System-User token with ads_read
         FB_AD_ACCOUNT_ID — format: act_XXXXXXXXXX
 
-    Returns (total_impressions: int, total_spend_str: str)
-        e.g. (4821, "312.47")
-    On any error or missing credentials returns (0, '--').
+    Returns dict: {impressions: int, reach: int, clicks: int, spend: str}
+        e.g. {'impressions': 4821, 'reach': 3200, 'clicks': 142, 'spend': '312.47'}
+    On any error or missing credentials returns
+        {'impressions': 0, 'reach': 0, 'clicks': 0, 'spend': '--'}.
 
     Graph API flow:
       1. GET /{ad_account_id}/campaigns
-             ?fields=name,insights{impressions,spend}
+             ?fields=name,insights{impressions,reach,clicks,spend}
              &date_preset=lifetime
              &limit=500
              &access_token=...
       2. Filter campaigns whose name contains search_key (case-insensitive).
-      3. Sum impressions + spend from each matching campaign's insights node.
+      3. Sum metrics from each matching campaign's insights node.
       4. Paginate using the 'next' cursor until all campaigns are fetched.
     """
+    _empty = {'impressions': 0, 'reach': 0, 'clicks': 0, 'spend': '--'}
     print(f"  [INFO] Fetching Facebook Insights for search_key='{search_key}'...")
 
     fb_token      = os.getenv('FB_ACCESS_TOKEN')
@@ -639,16 +641,18 @@ def fetch_facebook_insights(search_key):
 
     if not fb_token or not fb_account_id:
         print("  [WARN] FB_ACCESS_TOKEN or FB_AD_ACCOUNT_ID not set — skipping Meta Insights fetch")
-        return 0, '--'
+        return _empty
 
     total_impressions = 0
+    total_reach       = 0
+    total_clicks      = 0
     total_spend       = 0.0
     matched_campaigns = 0
 
     try:
         endpoint = f"https://graph.facebook.com/v19.0/{fb_account_id}/campaigns"
         params = {
-            'fields': 'name,insights{impressions,spend}',
+            'fields': 'name,insights{impressions,reach,clicks,spend}',
             'date_preset': 'lifetime',
             'limit': 500,
             'access_token': fb_token,
@@ -673,11 +677,15 @@ def fetch_facebook_insights(search_key):
                 insights_wrapper = campaign.get('insights', {})
                 insights_data    = insights_wrapper.get('data', [])
                 for row in insights_data:
-                    imp   = int(row.get('impressions', 0) or 0)
-                    spend = float(row.get('spend', 0) or 0)
+                    imp    = int(row.get('impressions', 0) or 0)
+                    reach  = int(row.get('reach',       0) or 0)
+                    clicks = int(row.get('clicks',      0) or 0)
+                    spend  = float(row.get('spend',     0) or 0)
                     total_impressions += imp
+                    total_reach       += reach
+                    total_clicks      += clicks
                     total_spend       += spend
-                print(f"  [DEBUG] Matched campaign: '{name}' — impressions={imp}, spend={spend:.2f}")
+                print(f"  [DEBUG] Matched campaign: '{name}' — impressions={imp}, reach={reach}, clicks={clicks}, spend={spend:.2f}")
 
             # Pagination — params must be cleared after first request (cursor is embedded in 'next')
             paging = payload.get('paging', {})
@@ -686,16 +694,16 @@ def fetch_facebook_insights(search_key):
 
         if matched_campaigns == 0:
             print(f"  [WARN] No Facebook campaigns matched search_key='{search_key}'")
-            return 0, '--'
+            return _empty
 
         spend_str = f"{total_spend:,.2f}"
-        print(f"  [DEBUG] Meta Insights total: reach={total_impressions}, spend=${spend_str} "
-              f"(across {matched_campaigns} campaign(s))")
-        return total_impressions, spend_str
+        print(f"  [DEBUG] Meta Insights total: impressions={total_impressions}, reach={total_reach}, "
+              f"clicks={total_clicks}, spend=${spend_str} (across {matched_campaigns} campaign(s))")
+        return {'impressions': total_impressions, 'reach': total_reach, 'clicks': total_clicks, 'spend': spend_str}
 
     except Exception as e:
         print(f"  [ERROR] Meta Insights API call failed: {e}")
-        return 0, '--'
+        return {'impressions': 0, 'reach': 0, 'clicks': 0, 'spend': '--'}
 
 
 def fetch_brokerbay_feedback():
@@ -1160,7 +1168,7 @@ def fetch_mls_agent_activity(target_url):
 # DATA.JS UPDATE
 # ============================================================================
 
-def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count=0, brokerbay_feedback=None, homes_report_url=None, homes_total_views=0, homes_leads=0, homes_retargeting_views=0, homes_retargeting_sites=0, homes_retargeting_users=0, homes_broker_sites=0, fb_paid_reach=0, fb_paid_spend='--', agent_activity=0, campaign_start_date=''):
+def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cities, brokerbay_count=0, brokerbay_feedback=None, homes_report_url=None, homes_total_views=0, homes_leads=0, homes_retargeting_views=0, homes_retargeting_sites=0, homes_retargeting_users=0, homes_broker_sites=0, fb_paid_reach=0, fb_paid_spend='--', fb_reach=0, fb_clicks=0, agent_activity=0, campaign_start_date=''):
     """
     Update data.js syndicationStats block with fetched ListTrac data and BrokerBay feedback.
     
@@ -1170,11 +1178,13 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
       - favorites            -> listTracInquiries
       - top_websites         -> listTracTopWebsites (array of {name, views})
       - top_cities           -> listTracTopCities (array of {name, views})
-      - brokerbay_count      -> brokerBayShowings
+      - brokerbay_count      -> brokerBayShowings (floor: never below 1)
       - brokerbay_feedback   -> propertyData.feedbackLog
       - homes_broker_sites   -> homesComStats.homesComBrokerSites
-      - fb_paid_reach        -> syndicationStats.facebookPaidReach
+      - fb_paid_reach        -> syndicationStats.facebookPaidReach  (impressions)
       - fb_paid_spend        -> syndicationStats.facebookPaidSpend
+      - fb_reach             -> syndicationStats.facebookReach      (unique reach)
+      - fb_clicks            -> syndicationStats.facebookClicks     (page views / clicks)
       - agent_activity       -> propertyData.agentActivity
       - campaign_start_date  -> syndicationStats.campaignStartDate
     """
@@ -1353,6 +1363,18 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
         content = re.sub(r'(facebookPaidSpend:\s*)"[^"]*"', f'\\g<1>"{fb_paid_spend}"', content)
         if content != old_content:
             print(f"    -> facebookPaidSpend: {fb_paid_spend}")
+    # facebookReach (unique audience reach) — only update when a real value is returned
+    if fb_reach > 0:
+        old_content = content
+        content = re.sub(r'(facebookReach:\s*)\d+', f'\\g<1>{fb_reach}', content)
+        if content != old_content:
+            print(f"    -> facebookReach: {fb_reach}")
+    # facebookClicks (page views / link clicks) — only update when a real value is returned
+    if fb_clicks > 0:
+        old_content = content
+        content = re.sub(r'(facebookClicks:\s*)\d+', f'\\g<1>{fb_clicks}', content)
+        if content != old_content:
+            print(f"    -> facebookClicks: {fb_clicks}")
 
     # Update Campaign Start Date (campaignStartDate) — only write when provided
     if campaign_start_date:
@@ -1443,8 +1465,12 @@ def main():
 
     # Step 5: Fetch Facebook / Meta Paid Performance
     print("\n  --- FACEBOOK / META INSIGHTS (PAID PERFORMANCE) ---")
-    fb_paid_reach, fb_paid_spend = fetch_facebook_insights(PROPERTY_SEARCH_KEY)
-    print(f"  [INFO] Meta Insights: PaidReach={fb_paid_reach}, PaidSpend={fb_paid_spend}")
+    fb_insights   = fetch_facebook_insights(PROPERTY_SEARCH_KEY)
+    fb_paid_reach = fb_insights['impressions']
+    fb_reach      = fb_insights['reach']
+    fb_clicks     = fb_insights['clicks']
+    fb_paid_spend = fb_insights['spend']
+    print(f"  [INFO] Meta Insights: Impressions={fb_paid_reach}, Reach={fb_reach}, Clicks={fb_clicks}, Spend={fb_paid_spend}")
 
     # Step 6: Fetch MLS Agent Activity (id="NumberOfViews" on MLS detail page)
     print("\n  --- MLS AGENT ACTIVITY ---")
@@ -1479,6 +1505,7 @@ def main():
                                    homes_retargeting_views=homes_retargeting_views, homes_retargeting_sites=homes_retargeting_sites,
                                    homes_retargeting_users=homes_retargeting_users, homes_broker_sites=homes_broker_sites,
                                    fb_paid_reach=fb_paid_reach, fb_paid_spend=fb_paid_spend,
+                                   fb_reach=fb_reach, fb_clicks=fb_clicks,
                                    agent_activity=agent_activity, campaign_start_date=CAMPAIGN_START_DATE)
         print("Sync Successful!")
         print(f"   - Lifetime Views: {lifetime_views}")
@@ -1514,6 +1541,8 @@ def main():
     print(f"Final Broker Support Sites: {homes_broker_sites}  [homesComStats.homesComBrokerSites]")
     print(f"Final Facebook Paid Reach: {fb_paid_reach}  [syndicationStats.facebookPaidReach]")
     print(f"Final Facebook Paid Spend: {fb_paid_spend}  [syndicationStats.facebookPaidSpend]")
+    print(f"Final Facebook Reach:      {fb_reach}       [syndicationStats.facebookReach]")
+    print(f"Final Facebook Clicks:     {fb_clicks}      [syndicationStats.facebookClicks]")
     print(f"Final MLS Agent Activity: {agent_activity}  [propertyData.agentActivity]")
 
 

@@ -1625,7 +1625,7 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
 
                         <!-- CARD A: AWARENESS -->
-                        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col items-center text-center">
+                        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col h-full items-center text-center">
                             <div class="flex items-center gap-2 mb-3">
                                 <span class="text-blue-400 text-lg">&#128225;</span>
                                 <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-blue-300">Awareness <span class="text-slate-500">/</span> Total Views</h4>
@@ -1634,7 +1634,7 @@
                         </div>
 
                         <!-- CARD B: ENGAGEMENT -->
-                        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col items-center text-center">
+                        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col h-full items-center text-center">
                             <div class="flex items-center gap-2 mb-3">
                                 <span class="text-yellow-400 text-lg">&#128065;</span>
                                 <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-yellow-300">Engagement <span class="text-slate-500">/</span> Detail Views</h4>
@@ -1642,19 +1642,34 @@
                             <span id="intel-engagement-saves" class="text-4xl font-black text-white mb-1">--</span>
                         </div>
 
-                        <!-- CARD C: PAID PERFORMANCE -->
-                        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col items-center text-center">
+                        <!-- CARD C: SOCIAL PERFORMANCE — 4-item high-density grid -->
+                        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col h-full items-center text-center">
                             <div class="flex items-center gap-2 mb-3">
                                 <span class="text-pink-400 text-lg">&#128176;</span>
-                                <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-pink-300">Social Media <span class="text-slate-500">/</span> Digital Impressions</h4>
+                                <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-pink-300">Social Performance <span class="text-slate-500">/</span> Facebook</h4>
                             </div>
-                            <p class="text-[0.55rem] text-slate-400 uppercase tracking-wider mb-1">Campaign Status: <span id="intel-campaign-status" class="text-white">Active</span></p>
-                            <span id="intel-paid-reach" class="text-4xl font-black text-white mb-1">--</span>
-                            <p id="intel-social-narrative" class="text-[0.65rem] text-slate-300 italic leading-relaxed"></p>
+                            <div class="w-full grid grid-cols-2 gap-1.5 mt-1">
+                                <div class="flex flex-col items-center bg-pink-950/50 rounded-xl py-2 px-1 border border-pink-800/40">
+                                    <span id="intel-fb-impressions" class="text-xl font-black text-white leading-none">--</span>
+                                    <span class="text-[0.5rem] font-bold text-pink-300 uppercase tracking-wider mt-1 leading-tight">Impressions</span>
+                                </div>
+                                <div class="flex flex-col items-center bg-pink-950/50 rounded-xl py-2 px-1 border border-pink-800/40">
+                                    <span id="intel-fb-reach" class="text-xl font-black text-white leading-none">--</span>
+                                    <span class="text-[0.5rem] font-bold text-pink-300 uppercase tracking-wider mt-1 leading-tight">Reach</span>
+                                </div>
+                                <div class="flex flex-col items-center bg-pink-950/50 rounded-xl py-2 px-1 border border-pink-800/40">
+                                    <span id="intel-fb-views" class="text-xl font-black text-white leading-none">--</span>
+                                    <span class="text-[0.5rem] font-bold text-pink-300 uppercase tracking-wider mt-1 leading-tight">Page Views</span>
+                                </div>
+                                <div class="flex flex-col items-center bg-pink-950/50 rounded-xl py-2 px-1 border border-pink-800/40">
+                                    <span id="intel-fb-hook" class="text-xl font-black text-white leading-none">--</span>
+                                    <span class="text-[0.5rem] font-bold text-pink-300 uppercase tracking-wider mt-1 leading-tight">Hook Rate</span>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- CARD D: SOCIAL RETARGETING -->
-                        <div class="bg-slate-900 rounded-2xl p-5 border border-violet-800/50 shadow-xl flex flex-col items-center text-center">
+                        <div class="bg-slate-900 rounded-2xl p-5 border border-violet-800/50 shadow-xl flex flex-col h-full items-center text-center">
                             <div class="flex items-center gap-2 mb-3">
                                 <span class="text-violet-400 text-lg">&#127758;</span>
                                 <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-violet-300">Social Retargeting <span class="text-slate-500">/</span> Network</h4>
@@ -1677,7 +1692,7 @@
                         </div>
 
                         <!-- CARD E: AGENT ACTIVITY -->
-                        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col items-center text-center">
+                        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col h-full items-center text-center">
                             <div class="flex items-center gap-2 mb-3">
                                 <span class="text-orange-400 text-lg">&#128100;</span>
                                 <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-orange-300">Agent Activity <span class="text-slate-500">/</span> MLS Interest</h4>
@@ -1687,7 +1702,7 @@
                         </div>
 
                         <!-- CARD F: BROKER SUPPORT -->
-                        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col items-center text-center">
+                        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col h-full items-center text-center">
                             <div class="flex items-center gap-2 mb-3">
                                 <span class="text-emerald-400 text-lg">&#127968;</span>
                                 <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-emerald-300">Broker Support <span class="text-slate-500">/</span> Co-Marketing</h4>
@@ -1696,7 +1711,7 @@
                         </div>
 
                         <!-- CARD G: PERFORMANCE -->
-                        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col items-center text-center">
+                        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col h-full items-center text-center">
                             <div class="flex items-center gap-2 mb-3">
                                 <span class="text-sky-400 text-lg">&#128200;</span>
                                 <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-sky-300">Performance <span class="text-slate-500">/</span> Funnel Health</h4>
@@ -1708,7 +1723,7 @@
                         </div>
 
                         <!-- CARD H: CONVERSIONS -->
-                        <div class="bg-slate-900 rounded-2xl p-5 border border-emerald-800/50 shadow-xl flex flex-col items-center text-center">
+                        <div class="bg-slate-900 rounded-2xl p-5 border border-emerald-800/50 shadow-xl flex flex-col h-full items-center text-center">
                             <div class="flex items-center gap-2 mb-3">
                                 <span class="text-emerald-400 text-lg">&#9989;</span>
                                 <h4 class="text-[0.6rem] font-extrabold uppercase tracking-[0.2em] text-emerald-300">Conversions <span class="text-slate-500">/</span> Showings</h4>
