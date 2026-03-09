@@ -27,22 +27,29 @@ jobs:
         run: |
           pip install requests beautifulsoup4
 
-      - name: Run script
-        run: python sync_stats.py
+      - name: Run sync script for all properties
+        run: |
+          for dir in */; do
+            dir="${dir%/}"
+            if [ -f "$dir/config.json" ]; then
+              echo "Processing property: $dir"
+              python scripts/sync_stats.py "$dir"
+            fi
+          done
         env:
           REPORTING_EMAIL: ${{ secrets.REPORTING_EMAIL }}
-          REPORTING_APP_PASSWORD: ${{ secrets.REPORTING_APP_PASSWORD }}
+          STATS_EMAIL_PASSWORD: ${{ secrets.STATS_EMAIL_PASSWORD }}
 
       - name: Configure Git user
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Check for changes and commit
+      - name: Commit all updated data files
         run: |
-          git add data.js
+          git add '**/data.js'
           if git diff --staged --quiet; then
-            echo "No changes detected in data.js"
+            echo "No changes detected in any data.js files"
           else
             git commit -m "Automated Weekly Sync: ListTrac Data"
             git pull --rebase origin main

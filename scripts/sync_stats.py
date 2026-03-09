@@ -16,15 +16,35 @@ from bs4 import BeautifulSoup
 
 print("=== RUNNING CONNECTION SMOKE TEST ===")
 
+# ============================================================================
+# DYNAMIC CONFIG — folder name passed as first CLI argument by GitHub Actions
+# ============================================================================
+
+if len(sys.argv) < 2:
+    print("ERROR: No target folder argument provided. Usage: python sync_stats.py <folder>")
+    sys.exit(1)
+
+target_folder = sys.argv[1]
+
+config_path = os.path.join(target_folder, 'config.json')
+with open(config_path, 'r', encoding='utf-8') as _cfg_file:
+    _config = json.load(_cfg_file)
+
+PROPERTY_SEARCH_KEY = _config['search_key']
+
+DATA_JS_PATH = os.path.join(target_folder, 'data.js')
+
+print(f"[CONFIG] target_folder={target_folder}  search_key={PROPERTY_SEARCH_KEY}  data.js={DATA_JS_PATH}")
+
 # Retrieve email credentials from environment
 REPORTING_EMAIL = os.getenv('REPORTING_EMAIL')
-REPORTING_APP_PASSWORD = os.getenv('REPORTING_APP_PASSWORD')
+REPORTING_APP_PASSWORD = os.environ.get('STATS_EMAIL_PASSWORD')
 
 # Check if credentials are missing
 if not REPORTING_EMAIL:
     print("ERROR: Secret REPORTING_EMAIL is missing from environment.")
 if not REPORTING_APP_PASSWORD:
-    print("ERROR: Secret REPORTING_APP_PASSWORD is missing from environment.")
+    print("ERROR: Secret STATS_EMAIL_PASSWORD is missing from environment.")
 
 # Only attempt connection if both credentials are available
 if REPORTING_EMAIL and REPORTING_APP_PASSWORD:
@@ -67,8 +87,6 @@ API_URL = 'https://ntreis.mysellerreports.com/admin/Statistics/GetSingleListing?
 
 # Source 3: Legacy Summary Report (Fallback)
 LEGACY_SUMMARY_URL = 'https://r.mysellerreports.com/vpCFz3gNvgg'
-
-DATA_JS_PATH = '../109-Kelli-Dr/data.js'
 
 # Full browser headers to avoid redirects and request rejection
 HEADERS = {
@@ -404,7 +422,7 @@ def fetch_homes_com_stats():
         return None, 0, 0, 0, 0, 0, 0
 
     email_address = os.getenv('REPORTING_EMAIL')
-    app_password = os.getenv('REPORTING_APP_PASSWORD')
+    app_password = os.environ.get('STATS_EMAIL_PASSWORD')
 
     if not email_address or not app_password:
         print("  [ERROR] Missing email credentials for Homes.com fetch")
@@ -423,8 +441,8 @@ def fetch_homes_com_stats():
         mail.login(email_address, app_password)
         mail.select('inbox')
 
-        print('  [DEBUG] IMAP search: looking for SUBJECT "Homes.com Weekly Report" BODY "109 Kelli"')
-        status, messages = mail.search(None, '(SUBJECT "Homes.com Weekly Report" BODY "109 Kelli")')
+        print(f'  [DEBUG] IMAP search: looking for SUBJECT "Homes.com Weekly Report" BODY "{PROPERTY_SEARCH_KEY}"')
+        status, messages = mail.search(None, f'(SUBJECT "Homes.com Weekly Report" BODY "{PROPERTY_SEARCH_KEY}")')
         if status != 'OK' or not messages[0].strip():
             print("  [WARN] No Homes.com Weekly Report emails found")
             mail.close()
@@ -646,6 +664,9 @@ def fetch_facebook_insights():
 
     # Placeholder until token is activated
     return 0, '--'
+
+
+def fetch_brokerbay_feedback():
     """
     Secure IMAP connection to Gmail to extract BrokerBay feedback emails.
     Flexible: Search only for SUBJECT "Feedback Submitted", then filter for property locally.
@@ -654,26 +675,23 @@ def fetch_facebook_insights():
     """
     print("  [INFO] Connecting to Gmail IMAP for BrokerBay feedback...")
 
-    # Check if BeautifulSoup is available
     if BeautifulSoup is None:
         print("  [WARN] BeautifulSoup not available - skipping BrokerBay feedback extraction")
         return 0, []
 
-    # Get credentials from environment variables
     email_address = os.getenv('REPORTING_EMAIL')
-    app_password = os.getenv('REPORTING_APP_PASSWORD')
+    app_password = os.environ.get('STATS_EMAIL_PASSWORD')
 
     if not email_address or not app_password:
-        print("  [ERROR] Missing email credentials - set REPORTING_EMAIL and REPORTING_APP_PASSWORD environment variables")
+        print("  [ERROR] Missing email credentials - set REPORTING_EMAIL and STATS_EMAIL_PASSWORD environment variables")
         return 0, []
 
-    # Try IMAP search
+    property_phrases = [PROPERTY_SEARCH_KEY]
+
     try:
         mail = imaplib.IMAP4_SSL('imap.gmail.com')
         mail.login(email_address, app_password)
         mail.select('inbox')
-
-        property_phrases = ["109 Kelli", "Kelli Dr"]
 
         print('  [DEBUG] IMAP search: looking for SUBJECT "Feedback Submitted"')
         status, messages = mail.search(None, '(SUBJECT "Feedback Submitted")')
@@ -687,7 +705,7 @@ def fetch_facebook_insights():
         print(f"  [DEBUG] Found {len(message_ids)} total emails matching subject 'Feedback Submitted'.")
 
         feedback_candidates = []
-        for idx, msg_id in enumerate(reversed(message_ids)):  # Newest-first
+        for idx, msg_id in enumerate(reversed(message_ids)):
             try:
                 print(f"  [DEBUG] Fetching email #{idx+1}, ID={msg_id.decode() if hasattr(msg_id,'decode') else msg_id}")
                 status, msg_data = mail.fetch(msg_id, '(RFC822)')
@@ -701,9 +719,7 @@ def fetch_facebook_insights():
                 email_body = msg_data[0][1]
                 email_message = email.message_from_bytes(email_body)
 
-                # Grab full subject, text, and html for local filtering
                 subj = email_message.get('Subject', '')
-                # Get payload for searching
                 body_text = ""
                 html_content = ""
                 if email_message.is_multipart():
@@ -720,7 +736,6 @@ def fetch_facebook_insights():
                     elif content_type == "text/plain":
                         body_text = email_message.get_payload(decode=True).decode('utf-8', errors='ignore')
 
-                # Attempt local filter: must contain property phrase in subject or in html/text body
                 concatenated_search = (subj or "") + " " + (body_text or "") + " " + (html_content or "")
                 matched = any(phrase in concatenated_search for phrase in property_phrases)
                 print(f"  [DEBUG] Email #{idx+1} - Matched property filter: {matched} (Subject: '{subj}')")
@@ -728,14 +743,13 @@ def fetch_facebook_insights():
                     print(f"  [DEBUG] Skipping email #{idx+1} (does not match property: {property_phrases})")
                     continue
 
-                # Passed filters: include as candidate
                 feedback_candidates.append({
                     'email_message': email_message,
                     'html_content': html_content,
                 })
 
                 if len(feedback_candidates) >= 10:
-                    break  # Only keep 10 most recent
+                    break
 
             except Exception as e:
                 print(f"  [ERROR] Error processing email #{idx+1}, ID {msg_id}: {e}")
@@ -744,7 +758,6 @@ def fetch_facebook_insights():
         for idx, candidate in enumerate(feedback_candidates):
             email_message = candidate['email_message']
             html_content = candidate['html_content']
-            # Date processing (repeat from above)
             email_date = email_message.get('Date', '')
             if email_date:
                 try:
@@ -753,7 +766,7 @@ def fetch_facebook_insights():
                         email_datetime = datetime.fromtimestamp(email.utils.mktime_tz(parsed_date))
                         formatted_date = email_datetime.strftime('%m/%d/%Y')
                     else:
-                        formatted_date = email_date[:10]  # Fallback
+                        formatted_date = email_date[:10]
                 except Exception as e:
                     print(f"  [WARN] Date parse failed: {e}")
                     formatted_date = email_date[:10]
