@@ -2,6 +2,7 @@
 // Contains property data, comparables, and pricing strategy
 
 const propertyData = {
+    agentActivity: 144,
     isListingActive: true, // Presentation Mode = false, Client Mode = true
     address: '109 Kelli Dr, Forney, TX 75126',
     city: 'Forney',

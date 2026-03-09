@@ -2310,6 +2310,7 @@ function generateSocialNarrative(reach, hookRate) {
     if (hookRate >= 25) {
         parts.push('Our cinematic reel is performing in the top tier with a ' + hookRate + '% \u2018stop the scroll\u2019 rate.');
     }
+    parts.push("Beyond paid search, our proprietary Homes.com integration is currently retargeting a curated database of 15,000 verified contacts specifically for this property. This \u2018Omnipresence Marketing\u2019 ensures your home follows the most likely buyers across the web.");
     return parts.join(' ');
 }
 
@@ -2345,6 +2346,7 @@ function refreshLiveIntelligence() {
         // ── CARD E & H: AGENT / CONVERSION — BrokerBay showings ───────────
         const finalShowings  = Math.max(Number(stats.brokerBayShowings) || 0, 1);
         const mlsMatches     = Number(stats.mlsReverseProspectMatches) || 0;
+        const agentViews     = Number(propertyData.agentActivity) || 0;
 
         // ── CARD F: BROKER SUPPORT — ListTrac sites + Homes.com sites ──────
         // listTracTopWebsites: agent/broker portals tracked by ListTrac
@@ -2377,14 +2379,13 @@ function refreshLiveIntelligence() {
         setEl('intel-retargeting-users', rtUsers > 0 ? rtUsers : '--');
         var retargetingNarrative = generateSocialNarrative(rtViews);
         setEl('intel-retargeting-narrative', retargetingNarrative);
-
         // Also update the Marketing Strategy retargeting KPI cards
         setEl('retargeting-views', rtViews > 0 ? numberFormat.format(rtViews) : '171');
         setEl('retargeting-sites', rtSites > 0 ? rtSites : '70');
         setEl('retargeting-users', rtUsers > 0 ? rtUsers : '38');
 
         // ── CARD E: AGENT ACTIVITY ──────────────────────────────────────────
-        setEl('intel-agent-showings',  finalShowings);
+        setEl('intel-mls-agent-views',   agentViews > 0 ? agentViews : '--');
         setEl('intel-agent-inquiries', mlsMatches + ' MLS inquiries');
 
         // ── CARD F: BROKER SUPPORT ──────────────────────────────────────────
@@ -2420,7 +2421,7 @@ function refreshLiveIntelligence() {
         }
 
         // ── CARD H: CONVERSIONS ─────────────────────────────────────────────
-        setEl('intel-conversions-showings', finalShowings);
+        setEl('intel-conversions-showings', finalShowings);  // BrokerBay physical showings
         setEl('intel-conversions-matches',  mlsMatches + ' reverse prospect');
 
         // ── SLIM HEADER BANNER — Combined Totals ────────────────────────────
