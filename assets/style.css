@@ -1,0 +1,270 @@
+body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        /* --- NAV BUTTON FIX (2026 Dashboard Standard) --- */
+        .nav-tabs-container {
+            position: relative;
+            display: flex;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+        .nav-tabs-container::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+        .nav-scroll-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .nav-arrow {
+            border: none;
+            background: #2563EB; /* solid blue-600 */
+            color: #FFFFFF;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.35rem;
+            border-radius: 9999px;
+            box-shadow: 0 8px 20px rgba(15,23,42,0.35); /* heavy shadow-xl style */
+            z-index: 50;
+        }
+        .nav-arrow:hover {
+            background: #1E40AF; /* blue-800 */
+        }
+        .nav-arrow svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+        .nav-shadow {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 24px;
+            pointer-events: none;
+        }
+        .nav-shadow-left {
+            left: 0;
+            background: linear-gradient(to right, rgba(255,255,255,1), rgba(255,255,255,0));
+        }
+        .nav-shadow-right {
+            right: 0;
+            background: linear-gradient(to left, rgba(255,255,255,1), rgba(255,255,255,0));
+        }
+        .nav-btn {
+            padding: 0.6rem 0.9rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            background-color: transparent;
+            color: #6B7280;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            flex: 0 0 auto; /* Prevent squishing on iPhone */
+        }
+        .nav-btn:hover {
+            background-color: rgba(59,130,246,0.08);
+            color: #1D4ED8;
+            border-bottom-color: rgba(59,130,246,0.5);
+        }
+        .nav-btn-external {
+            padding: 0.6rem 0.9rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #6B7280;
+            border-radius: 9999px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            flex: 0 0 auto;
+        }
+        .nav-btn-external:hover {
+            background-color: rgba(59,130,246,0.08);
+            color: #1D4ED8;
+        }
+        /* --- MOBILE HEADER & NAV COMPRESSION --- */
+        @media (max-width: 768px) {
+            header .header-inner {
+                padding-top: 0.5rem;   /* py-2 equivalent */
+                padding-bottom: 0.5rem;
+            }
+            header .header-logo {
+                height: 2rem;          /* h-8 equivalent */
+            }
+            header .header-title {
+                font-size: 1.125rem;   /* text-lg equivalent */
+                line-height: 1.5rem;
+            }
+            .nav-btn,
+            .nav-btn-external {
+                padding-top: 0.35rem;
+                padding-bottom: 0.35rem;
+            }
+        }
+        .nav-btn.active {
+            background-color: rgba(37,99,235,0.18);
+            color: #1D4ED8;
+            font-weight: 700;
+            border-bottom: 3px solid #2563EB;
+        }
+     /* --- COMP SUB-NAV FIX --- */
+     .sub-nav-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 9999px;
+            transition-property: color, background-color;
+            transition-duration: 200ms;
+            border: 1px solid #d1d5db;
+        }
+        .sub-nav-btn.active {
+            background-color: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+        }
+        
+        .sub-nav-btn.is-active {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            border-bottom-color: #2563eb !important;
+            border-bottom-width: 2px !important;
+        }
+        
+        #incentives-nav-tabs .sub-nav-btn.is-active {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            border-bottom: 2px solid #2563eb !important;
+        }
+        .kpi-card {
+            background-color: #ffffff;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition-property: transform;
+        }
+        .kpi-card:hover {
+            transform: scale(1.05);
+        }
+        .kpi-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .kpi-value {
+            font-size: 1.875rem;
+            line-height: 2.25rem;
+            font-weight: 800;
+            color: #44403c;
+            margin-top: 0.5rem;
+        }
+        @media (min-width: 768px) {
+            .kpi-value {
+                font-size: 2.25rem;
+                line-height: 2.5rem;
+            }
+        }
+        .kpi-sub {
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+        .page-section {
+            background-color: #ffffff;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .page-section {
+                padding: 2rem;
+            }
+        }
+        /* --- OPTIMAL BLUE TOUCH-TO-INTERACT WRAPPER --- */
+        .iframe-touch-wrapper {
+            position: relative;
+        }
+        .iframe-touch-wrapper iframe {
+            pointer-events: none;
+        }
+        .iframe-touch-wrapper.active-iframe iframe {
+            pointer-events: auto;
+        }
+        .iframe-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, rgba(15,23,42,0.3), rgba(15,23,42,0.6));
+            color: #e5e7eb;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+        .iframe-touch-wrapper.active-iframe .iframe-overlay {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .page-section {
+            background-color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .page-section {
+                padding: 2rem;
+            }
+        }
+        main > div {
+            background-color: white;
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .data-table th, .data-table td {
+            padding: 0.75rem;
+            white-space: nowrap;
+        }
+        .data-table thead {
+            font-size: 0.75rem;
+            color: #374151;
+            text-transform: uppercase;
+            background-color: #f3f4f6;
+        }
+        /* Custom styles for bold text in Executive Summary to match original request */
+        .summary-bold { font-weight: 700; }
+        .summary-red { color: #dc2626; font-weight: 700; }
