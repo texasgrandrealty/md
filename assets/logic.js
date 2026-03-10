@@ -2303,15 +2303,7 @@ function getCampaignStatus(startDateStr) {
 
 function generateSocialNarrative(reach, hookRate) {
     if (hookRate === undefined) hookRate = 30;
-    var parts = [];
-    if (reach > 1000) {
-        parts.push('Your home has achieved massive digital omnipresence with over ' + reach.toLocaleString() + ' impressions.');
-    }
-    if (hookRate >= 25) {
-        parts.push('Our cinematic reel is performing in the top tier with a ' + hookRate + '% \u2018stop the scroll\u2019 rate.');
-    }
-    parts.push("Beyond paid search, our proprietary Homes.com integration is currently retargeting a curated database of 15,000 verified contacts specifically for this property. This \u2018Omnipresence Marketing\u2019 ensures your home follows the most likely buyers across the web.");
-    return parts.join(' ');
+    return "Our current data shows a strong engagement core. Upon the Phase 2 pivot to $434,900, we will deploy a $100.00 Meta Acceleration campaign. By leveraging our current 30% Hook Rate and optimized local targeting, this spend is projected to force 15,000+ new impressions into the top-funnel within 72 hours of the price change.";
 }
 
 function refreshLiveIntelligence() {
@@ -2506,19 +2498,21 @@ function refreshLiveIntelligence() {
 
         // ── Top Websites list ───────────────────────────────────────────────
         var websitesList = document.getElementById('live-top-websites');
-        if (websitesList && Array.isArray(stats.listTracTopWebsites)) {
-            // Homes.com always at the top
+        if (websitesList) {
+            // Homes.com always at the top, no border-top, matching li style
             var homesRowViews = homesViews > 0 ? numberFormat.format(homesViews) : '--';
-            var homesRow = '<li>' +
+            var homesRow = '<li style="border-top:none;">' +
                 '<span>Homes.com</span>' +
                 '<span>' + homesRowViews + '</span>' +
                 '</li>';
-            var websiteRows = stats.listTracTopWebsites.map(function(site) {
-                return '<li>' +
-                    '<span>' + site.name + '</span>' +
-                    '<span>' + numberFormat.format(site.views) + '</span>' +
-                    '</li>';
-            }).join('');
+            var websiteRows = Array.isArray(stats.listTracTopWebsites)
+                ? stats.listTracTopWebsites.map(function(site) {
+                    return '<li>' +
+                        '<span>' + site.name + '</span>' +
+                        '<span>' + numberFormat.format(site.views) + '</span>' +
+                        '</li>';
+                }).join('')
+                : '';
             websitesList.innerHTML = homesRow + websiteRows;
         }
 
