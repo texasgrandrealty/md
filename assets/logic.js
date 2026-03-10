@@ -2303,7 +2303,7 @@ function getCampaignStatus(startDateStr) {
 
 function generateSocialNarrative(reach, hookRate) {
     if (hookRate === undefined) hookRate = 30;
-    return "Our current data shows a strong engagement core. Upon the Phase 2 pivot to $434,900, we will deploy a $100.00 Meta Acceleration campaign. By leveraging our current 30% Hook Rate and optimized local targeting, this spend is projected to force 15,000+ new impressions into the top-funnel within 72 hours of the price change.";
+    return "Our current data shows a strong engagement core. Upon the Phase 2 pivot to $434,900, we will deploy a $100.00 Meta Acceleration campaign. By leveraging our current 30% Hook Rate and optimized local targeting, this spend is projected to force 15,384 – 16,923 new impressions into the top-funnel within 72 hours of the price change.";
 }
 
 function refreshLiveIntelligence() {
