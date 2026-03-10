@@ -142,6 +142,15 @@ const propertyData = {
         ]
     },
 
+    // Marketing Database Intelligence — Omnipresence Strategy
+    marketingDatabase: {
+        databaseTotal: 20672,
+        retargetingPool: 15000,
+        localInterestFactor: 0.031, // 3.1% — percentage of database searching locally
+        awareness: `Our Omnipresence strategy retargets a pool of 15,000 verified contacts across 70+ premium publisher sites, ensuring your property follows high-intent buyers across their entire digital journey.`,
+        socialPerformance: `Our Omnipresence strategy retargets a pool of ${15000} verified contacts. With a private database of 20,672 active buyers, we deploy precision retargeting that places your listing in front of the right audience — not just a broad audience.`
+    },
+
     // Reporting Links for Transparency Command Center
     reportingLinks: {
         'infographic': 'https://www.texasgrandrealty.com',
@@ -170,6 +179,12 @@ const BUYDOWN_PRICE_OPTION_2 = propertyData.price;
 const OWNER_FINANCE_RATE = propertyData.ownerFinanceRate;
 const OWNER_FINANCE_DP_PCT = propertyData.ownerFinanceDownPct;
 const TOTAL_CDOM = propertyData.cdom;
+
+// Marketing Database Intelligence — derived calculated value
+// Represents active buyers in our database currently searching locally
+const localMatchCount = Math.round(
+    propertyData.marketingDatabase.databaseTotal * propertyData.marketingDatabase.localInterestFactor
+);
 
 // Pricing strategy constants
 const BUYDOWNS = {

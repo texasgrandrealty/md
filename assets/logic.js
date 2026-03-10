@@ -2370,8 +2370,20 @@ function refreshLiveIntelligence() {
         // ── CARD A: AWARENESS ───────────────────────────────────────────────
         setEl('intel-awareness-total', combinedTotalViews > 0 ? numberFormat.format(combinedTotalViews) : '--');
 
+        // ── DATABASE INTELLIGENCE CALLOUT — localMatchCount injection ───────
+        if (typeof localMatchCount !== 'undefined') {
+            var localMatchFormatted = numberFormat.format(localMatchCount);
+            setEl('db-local-match-count',   localMatchFormatted);
+            setEl('db-local-match-count-2', localMatchFormatted);
+        }
+        // Also inject city name into db-city-name if present
+        if (typeof propertyData !== 'undefined' && propertyData.city) {
+            setEl('db-city-name', propertyData.city);
+        }
+
         // ── CARD B: ENGAGEMENT ──────────────────────────────────────────────
         setEl('intel-engagement-saves',    zillowSaves > 0  ? numberFormat.format(zillowSaves) : '--');
+        setEl('intel-zillow-saves',         zillowSaves > 0  ? numberFormat.format(zillowSaves) : '--');
         setEl('intel-engagement-inquiries', inquiries + ' inquiries');
 
         // ── CARD C: SOCIAL PERFORMANCE — Facebook 4-item grid ──────────────

@@ -268,3 +268,171 @@ body {
         /* Custom styles for bold text in Executive Summary to match original request */
         .summary-bold { font-weight: 700; }
         .summary-red { color: #dc2626; font-weight: 700; }
+
+        /* ═══════════════════════════════════════════════════════════════════════ */
+        /* OMNIPRESENCE AD PLACEMENTS — Icon Wall Grid                            */
+        /* 4 columns on mobile, 8 columns on desktop                              */
+        /* ═══════════════════════════════════════════════════════════════════════ */
+        .omnipresence-icon-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.625rem;
+        }
+        @media (min-width: 768px) {
+            .omnipresence-icon-grid {
+                grid-template-columns: repeat(8, 1fr);
+            }
+        }
+        .omnipresence-icon-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            border-radius: 0.75rem;
+            padding: 0.75rem 0.375rem;
+            cursor: default;
+            transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease, border-color 0.22s ease;
+        }
+        .omnipresence-icon-card:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(139, 92, 246, 0.5);
+            filter: brightness(1.15);
+            border-color: rgba(139, 92, 246, 0.6);
+        }
+        .omnipresence-icon-label {
+            font-size: 0.42rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #94a3b8;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════════ */
+        /* DIGITAL ASSET GALLERY — High-End Cards (glassmorphism / dark-mode)     */
+        /* ═══════════════════════════════════════════════════════════════════════ */
+        .digital-asset-card {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255,255,255,0.04) inset;
+            transition: box-shadow 0.25s ease, transform 0.25s ease;
+        }
+        .digital-asset-card:hover {
+            box-shadow: 0 28px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(59, 130, 246, 0.35) inset;
+            transform: translateY(-2px);
+        }
+        .digital-asset-thumb {
+            position: relative;
+            width: 100%;
+            padding-bottom: 52%;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .digital-asset-thumb img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        .digital-asset-card:hover .digital-asset-thumb img {
+            transform: scale(1.04);
+        }
+        .digital-asset-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.75) 100%);
+            display: flex;
+            align-items: flex-end;
+            padding: 1rem;
+            pointer-events: none;
+        }
+        .digital-asset-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.35rem 0.85rem;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 9999px;
+            color: #e2e8f0;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+        .digital-asset-body {
+            padding: 1.25rem 1.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .digital-asset-type-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.55rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .digital-asset-cta {
+            display: inline-block;
+            padding: 0.55rem 1.25rem;
+            background: rgba(37, 99, 235, 0.9);
+            color: #ffffff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            border-radius: 9999px;
+            text-decoration: none;
+            transition: background 0.2s ease, transform 0.15s ease;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+        }
+        .digital-asset-cta:hover {
+            background: rgba(29, 78, 216, 1);
+            transform: scale(1.03);
+        }
+
+        /* Social Reel embed container */
+        .social-reel-embed-container {
+            width: 100%;
+        }
+        .social-reel-embed-inner {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            background: #000;
+        }
+        .social-reel-embed-inner iframe {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════════ */
+        /* MARKETING FUNNEL VERTICAL ARCHITECTURE — Connector + Stage Labels      */
+        /* ═══════════════════════════════════════════════════════════════════════ */
+        .funnel-stage-card {
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            border-width: 1px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+            margin-bottom: 1rem;
+        }
