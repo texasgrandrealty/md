@@ -103,8 +103,8 @@ const propertyData = {
         facebookPaidReach: 1171,
         facebookImpressions: 1171,
         facebookPaidSpend: '19.96',
-        campaignStartDate: "2026-03-05",
-        listingDOM: 4,
+        campaignStartDate: "2026-02-11",
+        listingDOM: 27,
 
         // Retargeting Ad Placements (Homes.com — moved into Awareness stage)
         retargetingAdPlacements: 83,

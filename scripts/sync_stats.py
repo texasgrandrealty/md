@@ -1410,7 +1410,7 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
         if content != old_content:
             print(f"    -> campaignStartDate: {campaign_start_date}")
 
-    # Calculate and update listingDOM — days since campaign_start_date (2026-03-05)
+    # Calculate and update listingDOM — days since campaign_start_date (2026-02-11)
     if campaign_start_date:
         try:
             from datetime import date as _date

@@ -2401,8 +2401,8 @@ function refreshLiveIntelligence() {
         // ── CARD B: ENGAGEMENT ──────────────────────────────────────────────
         // Favorited / Saved / Hearted (aggregate of Zillow/ListTrac saves)
         setEl('intel-zillow-saves', zillowSaves > 0 ? numberFormat.format(zillowSaves) : '--');
-        // Aggregate saves (Zillow + ListTrac) — shown in the engagement saves card
-        setEl('intel-engagement-saves', zillowSaves > 0 ? numberFormat.format(zillowSaves) : '--');
+        // Identified Social Buyers — from homesComRetargetingUsers
+        setEl('intel-engagement-saves', rtUsers > 0 ? numberFormat.format(rtUsers) : '--');
         setEl('intel-engagement-inquiries', inquiries + ' inquiries');
         // Detail Views — from listTracPropertyViews (ListTrac 'Property Views')
         var detailViews = Number(stats.listTracPropertyViews || stats.listTracTotalViews) || 0;
@@ -2507,19 +2507,19 @@ function refreshLiveIntelligence() {
         // ── Top Websites list ───────────────────────────────────────────────
         var websitesList = document.getElementById('live-top-websites');
         if (websitesList && Array.isArray(stats.listTracTopWebsites)) {
+            // Homes.com always at the top
+            var homesRowViews = homesViews > 0 ? numberFormat.format(homesViews) : '--';
+            var homesRow = '<li>' +
+                '<span>Homes.com</span>' +
+                '<span>' + homesRowViews + '</span>' +
+                '</li>';
             var websiteRows = stats.listTracTopWebsites.map(function(site) {
                 return '<li>' +
                     '<span>' + site.name + '</span>' +
                     '<span>' + numberFormat.format(site.views) + '</span>' +
                     '</li>';
             }).join('');
-            // Inject Homes.com as a permanent row using homesComStats.totalViews
-            var homesRowViews = homesViews > 0 ? numberFormat.format(homesViews) : '--';
-            websiteRows += '<li style="border-top: 2px solid #e2e8f0; padding-top: 0.5rem; margin-top: 0.25rem;">' +
-                '<span style="color:#7c3aed;font-weight:700;">Homes.com</span>' +
-                '<span>' + homesRowViews + '</span>' +
-                '</li>';
-            websitesList.innerHTML = websiteRows;
+            websitesList.innerHTML = homesRow + websiteRows;
         }
 
         // ── Top Cities list ─────────────────────────────────────────────────
