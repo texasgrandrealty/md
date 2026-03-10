@@ -2609,3 +2609,62 @@ window.addEventListener('DOMContentLoaded', function() {
         refreshLiveIntelligence();
     }, 2000);
 });
+
+// ╔══════════════════════════════════════════════════════════════════════╗
+// ║         TGR SECURITY SHIELD — PROPRIETARY ASSET PROTECTION          ║
+// ║         (C) 2026 Texas Grand Realty. All Rights Reserved.           ║
+// ╚══════════════════════════════════════════════════════════════════════╝
+(function tgrSecurityShield() {
+    // ── Right-Click Context Menu Lock ───────────────────────────────────
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        return false;
+    });
+
+    // ── Keyboard Shortcut Intercept (F12, Ctrl+Shift+I/J/U/C, Ctrl+U) ──
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'F12') { e.preventDefault(); return false; }
+        if (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) {
+            e.preventDefault(); return false;
+        }
+        if (e.ctrlKey && e.key.toUpperCase() === 'U') {
+            e.preventDefault(); return false;
+        }
+    });
+
+    // ── Forensic Console Warning ─────────────────────────────────────────
+    var _forensicWarningDeployed = false;
+    function deployForensicAlert() {
+        if (_forensicWarningDeployed) return;
+        _forensicWarningDeployed = true;
+        var styles = [
+            'color: #ff3333; font-size: 14px; font-weight: bold; background: #0a0a0a; padding: 8px 12px; border-left: 4px solid #ff3333;',
+            'color: #ffcc00; font-size: 12px; background: #0a0a0a; padding: 4px 12px;',
+            'color: #aaaaaa; font-size: 11px; background: #0a0a0a; padding: 4px 12px;'
+        ];
+        console.log('%c!!! SECURITY ALERT: Proprietary Institutional Asset !!!', styles[0]);
+        console.log('%cUnauthorized access or duplication is logged. (C) 2026 Texas Grand Realty', styles[1]);
+        console.log('%cAsset ID: TGR-EXEC-DASH-000.002.001 | Fingerprint: TGR-109KELLI-v2.4-FUNNEL-OMNI-EXEC', styles[2]);
+    }
+
+    // DevTools detection via console timing deviation
+    var _devToolsThreshold = 160;
+    setInterval(function() {
+        var start = performance.now();
+        // eslint-disable-next-line no-console
+        console.log('');
+        console.clear();
+        if (performance.now() - start > _devToolsThreshold) {
+            deployForensicAlert();
+        }
+    }, 1500);
+
+    // Window size deviation detection
+    var _outerDiff = window.outerHeight - window.innerHeight;
+    setInterval(function() {
+        var diff = window.outerHeight - window.innerHeight;
+        if (Math.abs(diff - _outerDiff) > 160) {
+            deployForensicAlert();
+        }
+    }, 2000);
+})();

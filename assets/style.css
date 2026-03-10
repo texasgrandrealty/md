@@ -635,3 +635,43 @@ body {
             color: #0f172a;
             font-weight: 900;
         }
+
+        /* ═══════════════════════════════════════════════════════════════
+           TGR PROPRIETARY WATERMARK — Print & Screenshot Layer
+           Visible only in print/screenshot capture as a faint overlay.
+           Invisible during normal interactive viewing.
+        ═══════════════════════════════════════════════════════════════ */
+        .tgr-watermark-container {
+            position: relative;
+        }
+        .tgr-watermark-container::after {
+            content: 'TGR PROPRIETARY ARCHITECTURE';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-35deg);
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: 0.15em;
+            color: transparent;
+            pointer-events: none;
+            user-select: none;
+            white-space: nowrap;
+            z-index: 0;
+        }
+        @media print {
+            .tgr-watermark-container::after {
+                color: rgba(0, 0, 0, 0.07);
+            }
+            body::before {
+                content: '(C) 2026 TEXAS GRAND REALTY — PROPRIETARY INSTITUTIONAL ASSET — UNAUTHORIZED REPRODUCTION PROHIBITED';
+                display: block;
+                text-align: center;
+                font-size: 0.6rem;
+                letter-spacing: 0.12em;
+                color: #888;
+                padding: 6px 0;
+                border-bottom: 1px solid #ddd;
+                margin-bottom: 8px;
+            }
+        }
