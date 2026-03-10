@@ -626,7 +626,7 @@ def fetch_facebook_insights(search_key):
     Graph API flow:
       1. GET /{ad_account_id}/campaigns
              ?fields=name,insights{impressions,reach,clicks,spend}
-             &date_preset=lifetime
+             &date_preset=maximum
              &limit=500
              &access_token=...
       2. Filter campaigns whose name contains search_key (case-insensitive).
@@ -650,7 +650,7 @@ def fetch_facebook_insights(search_key):
     matched_campaigns = 0
 
     try:
-        endpoint = f"https://graph.facebook.com/v19.0/{fb_account_id}/campaigns"
+        endpoint = f"https://graph.facebook.com/v22.0/{fb_account_id}/campaigns"
         params = {
             'fields': 'name,insights{impressions,reach,clicks,spend}',
             'date_preset': 'lifetime',
