@@ -107,7 +107,7 @@ const propertyData = {
 
         // Metadata for the Command Center
         mlsNumber: '21178024',
-        lastSync: 'March 9, 2026'
+        lastSync: 'March 10, 2026'
     },
     cdom: 0,
     downPaymentPct: 0.20,
