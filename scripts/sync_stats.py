@@ -653,7 +653,7 @@ def fetch_facebook_insights(search_key):
         endpoint = f"https://graph.facebook.com/v22.0/{fb_account_id}/campaigns"
         params = {
             'fields': 'name,insights{impressions,reach,clicks,spend}',
-            'date_preset': 'lifetime',
+            'date_preset': 'maximum',
             'limit': 500,
             'access_token': fb_token,
         }
