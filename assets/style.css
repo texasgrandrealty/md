@@ -500,8 +500,8 @@ body {
             transition: transform 0.22s ease, box-shadow 0.22s ease;
         }
         .intel-funnel-card:hover {
-            transform: scale(1.01);
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+            transform: scale(1.05);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.14);
         }
         .intel-funnel-card-header {
             display: flex;

@@ -1410,6 +1410,28 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
         if content != old_content:
             print(f"    -> campaignStartDate: {campaign_start_date}")
 
+    # Calculate and update listingDOM — days since campaign_start_date (2026-03-05)
+    if campaign_start_date:
+        try:
+            from datetime import date as _date
+            start_dt = _date.fromisoformat(campaign_start_date)
+            listing_dom = (datetime.now().date() - start_dt).days
+            listing_dom = max(listing_dom, 0)
+            old_content = content
+            if 'listingDOM:' in content:
+                content = re.sub(r'(listingDOM:\s*)\d+', f'\\g<1>{listing_dom}', content)
+            else:
+                # Insert listingDOM after campaignStartDate line
+                content = re.sub(
+                    r'(campaignStartDate:\s*[\'"][^\'"]*[\'"])',
+                    f'\\g<1>,\n        listingDOM: {listing_dom}',
+                    content
+                )
+            if content != old_content:
+                print(f"    -> listingDOM: {listing_dom} days (since {campaign_start_date})")
+        except Exception as _e:
+            print(f"  [WARN] Could not calculate listingDOM: {_e}")
+
     # Update Last Sync Date - handles both 'quoted' and "double-quoted" strings
     current_date = datetime.now().strftime('%B %d, %Y')
     current_date = re.sub(r' 0(\d),', r' \1,', current_date)  # Remove leading zero from day

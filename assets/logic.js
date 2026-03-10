@@ -2375,7 +2375,17 @@ function refreshLiveIntelligence() {
 
         // Retargeting Ad Placements (Awareness stage)
         var rtAdPlacements = Number(stats.retargetingAdPlacements || homesStats.homesComRetargetingSites) || 0;
-        setEl('intel-retargeting-placements', rtAdPlacements > 0 ? rtAdPlacements : '70');
+        setEl('intel-retargeting-placements', rtAdPlacements > 0 ? rtAdPlacements : '83');
+
+        // DOM — Days on Market, calculated from campaign_start_date
+        var listingDOM = Number(stats.listingDOM) || 0;
+        if (!listingDOM && stats.campaignStartDate) {
+            try {
+                var startMs = new Date(stats.campaignStartDate).getTime();
+                listingDOM = isNaN(startMs) ? 0 : Math.max(0, Math.floor((Date.now() - startMs) / 86400000));
+            } catch(e) { listingDOM = 0; }
+        }
+        setEl('intel-dom', listingDOM >= 0 ? listingDOM : '--');
 
         // ── DATABASE INTELLIGENCE CALLOUT — localMatchCount injection ───────
         if (typeof localMatchCount !== 'undefined') {

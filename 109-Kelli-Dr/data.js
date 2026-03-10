@@ -104,9 +104,10 @@ const propertyData = {
         facebookImpressions: 1171,
         facebookPaidSpend: '19.96',
         campaignStartDate: "2026-03-05",
+        listingDOM: 4,
 
         // Retargeting Ad Placements (Homes.com — moved into Awareness stage)
-        retargetingAdPlacements: 70,
+        retargetingAdPlacements: 83,
         
         // Mid Funnel: Engagement (AUTOMATED from ListTrac)
         listTracInquiries: 8,
@@ -149,9 +150,9 @@ const propertyData = {
         totalViews: 4465,
         leads: 0,
         // Retargeting block — AUTOMATED from Homes.com Weekly Report
-        homesComRetargetingViews: 171,
-        homesComRetargetingSites: 70,
-        homesComRetargetingUsers: 38,
+        homesComRetargetingViews: 200,
+        homesComRetargetingSites: 83,
+        homesComRetargetingUsers: 46,
         featuredSites: [
             { name: 'The Wall Street Journal', logo: 'wsj' },
             { name: 'Mansion Global', logo: 'mansion-global' },
