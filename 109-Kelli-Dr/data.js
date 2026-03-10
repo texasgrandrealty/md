@@ -84,12 +84,12 @@ const propertyData = {
         
         // Top Funnel: Awareness (MANUAL entry)
         listHubReach: 15400,
-        facebookReach: 0,
+        facebookReach: 958,
         fbSpend: '--',
         // Paid Social (MANUAL entry — update after each Facebook campaign)
-        facebookPaidReach: 0,
-        facebookImpressions: 0,
-        facebookPaidSpend: '--',
+        facebookPaidReach: 1171,
+        facebookImpressions: 1171,
+        facebookPaidSpend: '19.96',
         campaignStartDate: "2026-03-05",
         
         // Mid Funnel: Engagement (AUTOMATED from ListTrac)
@@ -97,7 +97,7 @@ const propertyData = {
         
         // Mid Funnel: Engagement (MANUAL entry)
         zillowSaves: 85,
-        facebookClicks: 0,
+        facebookClicks: 36,
         matterportWalkthroughs: 0,
         
         // Bottom Funnel: Conversion (MANUAL entry)
