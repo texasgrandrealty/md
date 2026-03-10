@@ -68,22 +68,35 @@ const propertyData = {
     // BrokerBay Feedback Intelligence Log
     feedbackLog: [],
     
+    // Global Brand Authority Stats (Last 6 Months — Agent Network Level)
+    // Used by the "Global Brand Momentum" header cards in tab-live-intel
+    globalBrandStats: {
+        totalNetworkViews: 1145216,   // Aggregate views across all listings / syndication
+        globalProfileViews: 127,      // Agent/brand profile views
+        viewsAcrossWeb: 57417         // Web presence views (Google Business, etc.)
+    },
+
     // Syndication Stats for Funnel Performance Scoreboard
     // AUTOMATED FIELDS (sync_stats.py fills these from ListTrac API):
     //   listTracTotalViews, listTracViews30Days, listTracInquiries, 
     //   listTracTopWebsites, listTracTopCities, lastSync
     // MANUAL FIELDS (enter these directly):
     //   listHubReach, facebookReach, zillowSaves, facebookClicks,
-    //   matterportWalkthroughs, brokerBayShowings, mlsReverseProspectMatches
+    //   matterportWalkthroughs, brokerBayShowings, mlsReverseProspectMatches,
+    //   mlsViews, listTracPropertyViews
     syndicationStats: {
         // Top Funnel: Awareness (AUTOMATED from ListTrac)
         listTracTotalViews: 3884,
         listTracViews30Days: 950,
+        // listTracPropertyViews: ListTrac 'Property Views' — used for Detail Views in Engagement
+        listTracPropertyViews: 3884,
         listTracTopWebsites: [{"name": "Zillow.com", "views": 417}, {"name": "Realtor.com", "views": 297}, {"name": "portal.onehome.com", "views": 31}, {"name": "Trulia", "views": 19}, {"name": "HAR.com", "views": 8}],
         listTracTopCities: [{"name": "Rowlett, TX", "views": 21}, {"name": "Mesquite, TX", "views": 15}, {"name": "Sulphur Springs, TX", "views": 15}, {"name": "Greenville, TX", "views": 14}, {"name": "Kilgore, TX", "views": 7}],
         
         // Top Funnel: Awareness (MANUAL entry)
-        listHubReach: 15400,
+        // listHubReach renamed to allListingsTotalViews (6-month aggregate across network)
+        allListingsTotalViews: 1145216,
+        listHubReach: 1145216,        // Legacy alias retained
         facebookReach: 958,
         fbSpend: '--',
         // Paid Social (MANUAL entry — update after each Facebook campaign)
@@ -91,14 +104,20 @@ const propertyData = {
         facebookImpressions: 1171,
         facebookPaidSpend: '19.96',
         campaignStartDate: "2026-03-05",
+
+        // Retargeting Ad Placements (Homes.com — moved into Awareness stage)
+        retargetingAdPlacements: 70,
         
         // Mid Funnel: Engagement (AUTOMATED from ListTrac)
         listTracInquiries: 8,
         
         // Mid Funnel: Engagement (MANUAL entry)
-        zillowSaves: 85,
+        // zillowSaves is now aggregate of Zillow + ListTrac saves
+        zillowSaves: 85,              // Aggregate: Zillow/ListTrac saves (Favorited/Saved/Hearted)
         facebookClicks: 36,
         matterportWalkthroughs: 0,
+        // mlsViews: MLS system views for this property (replaces agentActivity for this funnel)
+        mlsViews: 144,
         
         // Bottom Funnel: Conversion (MANUAL entry)
         // Locked floor: never allow this to persist as 0

@@ -1133,7 +1133,7 @@ def fetch_mls_agent_activity(target_url):
         # Primary: id-based extraction
         val, found = extract_by_element_id(html, 'NumberOfViews')
         if found and val > 0:
-            print(f"  [DEBUG] MLS agentActivity (id match): {val}")
+            print(f"  [DEBUG] MLS Views (id match): {val}")
             return val
 
         # Bulldozer fallback: strip tags, find number before known label variants
@@ -1147,10 +1147,10 @@ def fetch_mls_agent_activity(target_url):
             if m:
                 v = extract_number(m.group(1))
                 if v > 0:
-                    print(f"  [DEBUG] MLS agentActivity (bulldozer fallback): {v}")
+                    print(f"  [DEBUG] MLS Views (bulldozer fallback): {v}")
                     return v
 
-        print("  [WARN] MLS agentActivity: NumberOfViews not found on page")
+        print("  [WARN] MLS Views: NumberOfViews not found on page")
         return 0
 
     except requests.exceptions.Timeout:
@@ -1186,7 +1186,7 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
       - fb_paid_spend        -> syndicationStats.facebookPaidSpend
       - fb_reach             -> syndicationStats.facebookReach        (unique reach)
       - fb_clicks            -> syndicationStats.facebookClicks       (page views / clicks)
-      - agent_activity       -> propertyData.agentActivity
+      - agent_activity       -> syndicationStats.mlsViews
       - campaign_start_date  -> syndicationStats.campaignStartDate
     """
     with open(DATA_JS_PATH, 'r', encoding='utf-8') as f:
@@ -1194,21 +1194,21 @@ def update_data_js(lifetime_views, favorites, views_30day, top_websites, top_cit
     
     print(f"  [WRITE] Updating data.js with scraped values...")
     
-    # Update MLS Agent Activity (agentActivity in propertyData)
+    # Update MLS Views (mlsViews in syndicationStats)
     # Writes the value when a live number was fetched; never overwrites with 0.
     if agent_activity > 0:
         old_content = content
-        if 'agentActivity:' in content:
-            content = re.sub(r'(agentActivity:\s*)\d+', f'\\g<1>{agent_activity}', content)
+        if 'mlsViews:' in content:
+            content = re.sub(r'(mlsViews:\s*)\d+', f'\\g<1>{agent_activity}', content)
         else:
-            # Insert as the first field inside propertyData (after opening brace)
+            # Insert mlsViews into syndicationStats block as a fallback
             content = re.sub(
-                r'(const propertyData\s*=\s*\{)',
-                f'\\g<1>\n    agentActivity: {agent_activity},',
+                r'(syndicationStats:\s*\{)',
+                f'\\g<1>\n        mlsViews: {agent_activity},',
                 content
             )
         if content != old_content:
-            print(f"    -> agentActivity: {agent_activity}")
+            print(f"    -> syndicationStats.mlsViews: {agent_activity}")
     
     # Update Lifetime Views (listTracTotalViews)
     old_content = content
@@ -1490,7 +1490,7 @@ def main():
     # Step 6: Fetch MLS Agent Activity (id="NumberOfViews" on MLS detail page)
     print("\n  --- MLS AGENT ACTIVITY ---")
     agent_activity = fetch_mls_agent_activity(MLS_DETAILS_URL)
-    print(f"  [INFO] MLS agentActivity: {agent_activity}")
+    print(f"  [INFO] MLS Views (mlsViews): {agent_activity}")
 
     scraped_count = int(brokerbay_count or 0)
     existing_count = read_existing_brokerbay_count()
@@ -1559,7 +1559,7 @@ def main():
     print(f"Final Facebook Paid Spend: {fb_paid_spend}  [syndicationStats.facebookPaidSpend]")
     print(f"Final Facebook Reach:      {fb_reach}       [syndicationStats.facebookReach]")
     print(f"Final Facebook Clicks:     {fb_clicks}      [syndicationStats.facebookClicks]")
-    print(f"Final MLS Agent Activity: {agent_activity}  [propertyData.agentActivity]")
+    print(f"Final MLS Views: {agent_activity}  [syndicationStats.mlsViews]")
 
 
 if __name__ == '__main__':

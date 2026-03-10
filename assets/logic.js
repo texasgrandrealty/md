@@ -2287,7 +2287,7 @@ function calculateFunnelHealth() {
 //   CARD B (Engagement)        : Zillow saves (manual) + ListTrac inquiries
 //   CARD C (Social Performance): Facebook — facebookPaidReach/Impressions, facebookReach, facebookClicks, hookRate
 //   CARD D (Social Retarget)   : Homes.com homesComRetargeting{Views,Sites,Users}
-//   CARD E (Agent Activity)    : propertyData.agentActivity (MLS detail views)
+//   CARD E (Agent Activity)    : syndicationStats.mlsViews (MLS detail views)
 //   CARD F (Broker Support)    : ListTrac top-websites count + Homes.com featuredSites count
 //   CARD G (Performance)       : Computed funnel health score
 //   CARD H (Conversions)       : BrokerBay showings (physical) + MLS reverse-prospect
@@ -2354,7 +2354,6 @@ function refreshLiveIntelligence() {
         // ── CARD E & H: AGENT / CONVERSION — BrokerBay showings ───────────
         const finalShowings  = Math.max(Number(stats.brokerBayShowings) || 0, 1);
         const mlsMatches     = Number(stats.mlsReverseProspectMatches) || 0;
-        const agentViews     = Number(propertyData.agentActivity) || 0;
 
         // ── CARD F: BROKER SUPPORT — ListTrac sites + Homes.com sites ──────
         // listTracTopWebsites: agent/broker portals tracked by ListTrac
@@ -2370,6 +2369,14 @@ function refreshLiveIntelligence() {
         // ── CARD A: AWARENESS ───────────────────────────────────────────────
         setEl('intel-awareness-total', combinedTotalViews > 0 ? numberFormat.format(combinedTotalViews) : '--');
 
+        // Total Views (All Listings — 6 Months) = allListingsTotalViews or listHubReach fallback
+        var allListingsViews = Number(stats.allListingsTotalViews || stats.listHubReach) || 0;
+        setEl('intel-listhub-reach', allListingsViews > 0 ? numberFormat.format(allListingsViews) : '--');
+
+        // Retargeting Ad Placements (Awareness stage)
+        var rtAdPlacements = Number(stats.retargetingAdPlacements || homesStats.homesComRetargetingSites) || 0;
+        setEl('intel-retargeting-placements', rtAdPlacements > 0 ? rtAdPlacements : '70');
+
         // ── DATABASE INTELLIGENCE CALLOUT — localMatchCount injection ───────
         if (typeof localMatchCount !== 'undefined') {
             var localMatchFormatted = numberFormat.format(localMatchCount);
@@ -2382,9 +2389,21 @@ function refreshLiveIntelligence() {
         }
 
         // ── CARD B: ENGAGEMENT ──────────────────────────────────────────────
-        setEl('intel-engagement-saves',    zillowSaves > 0  ? numberFormat.format(zillowSaves) : '--');
-        setEl('intel-zillow-saves',         zillowSaves > 0  ? numberFormat.format(zillowSaves) : '--');
+        // Favorited / Saved / Hearted (aggregate of Zillow/ListTrac saves)
+        setEl('intel-zillow-saves', zillowSaves > 0 ? numberFormat.format(zillowSaves) : '--');
+        // Aggregate saves (Zillow + ListTrac) — shown in the engagement saves card
+        setEl('intel-engagement-saves', zillowSaves > 0 ? numberFormat.format(zillowSaves) : '--');
         setEl('intel-engagement-inquiries', inquiries + ' inquiries');
+        // Detail Views — from listTracPropertyViews (ListTrac 'Property Views')
+        var detailViews = Number(stats.listTracPropertyViews || stats.listTracTotalViews) || 0;
+        setEl('intel-detail-views', detailViews > 0 ? numberFormat.format(detailViews) : '--');
+        // MLS Views — mlsViews field (replaces agentActivity label)
+        var mlsViews = Number(stats.mlsViews || propertyData.agentActivity) || 0;
+        setEl('intel-mls-agent-views', mlsViews > 0 ? numberFormat.format(mlsViews) : '--');
+
+        // ── SCOREBOARD: MLS Views + Retarget Views new IDs ─────────────────
+        setEl('stat-mls-views',      mlsViews > 0  ? numberFormat.format(mlsViews)  : '--');
+        setEl('stat-retarget-views', rtViews > 0   ? numberFormat.format(rtViews)   : '--');
 
         // ── CARD C: SOCIAL PERFORMANCE — Facebook 4-item grid ──────────────
         setEl('intel-fb-impressions', stats.facebookImpressions || '--');
@@ -2410,7 +2429,7 @@ function refreshLiveIntelligence() {
         setEl('retargeting-users', rtUsers > 0 ? rtUsers : '38');
 
         // ── CARD E: AGENT ACTIVITY ──────────────────────────────────────────
-        setEl('intel-mls-agent-views',   agentViews > 0 ? agentViews : '--');
+        // intel-mls-agent-views is set above from syndicationStats.mlsViews
         setEl('intel-agent-inquiries', mlsMatches + ' MLS inquiries');
 
         // ── CARD F: BROKER SUPPORT ──────────────────────────────────────────
@@ -2449,8 +2468,16 @@ function refreshLiveIntelligence() {
         setEl('intel-conversions-showings', finalShowings);  // BrokerBay physical showings
         setEl('intel-conversions-matches',  mlsMatches + ' reverse prospect');
 
+        // ── GLOBAL BRAND MOMENTUM CARDS — Agent Network Level (Last 6 Months) ─
+        if (propertyData.globalBrandStats) {
+            var gbs = propertyData.globalBrandStats;
+            setEl('brand-network-views', gbs.totalNetworkViews > 0 ? numberFormat.format(gbs.totalNetworkViews) : '1,145,216');
+            setEl('brand-profile-views', gbs.globalProfileViews  > 0 ? numberFormat.format(gbs.globalProfileViews) : '127');
+            setEl('brand-web-views',     gbs.viewsAcrossWeb      > 0 ? numberFormat.format(gbs.viewsAcrossWeb)     : '57,417');
+        }
+
         // ── SLIM HEADER BANNER — Combined Totals ────────────────────────────
-        // "Views" = listTrac + Homes.com combined (combinedTotalViews); "Saves" = Zillow saves
+        // "Web Views" = listTrac + Homes.com combined; "Saves" = aggregate saves
         setEl('stat-listtrac-views',    combinedTotalViews > 0 ? numberFormat.format(combinedTotalViews) : '--');
         setEl('stat-zillow-saves',      zillowSaves > 0   ? numberFormat.format(zillowSaves)   : '--');
 
@@ -2471,16 +2498,16 @@ function refreshLiveIntelligence() {
         var websitesList = document.getElementById('live-top-websites');
         if (websitesList && Array.isArray(stats.listTracTopWebsites)) {
             var websiteRows = stats.listTracTopWebsites.map(function(site) {
-                return '<li class="flex justify-between items-center text-sm">' +
-                    '<span class="text-slate-300">' + site.name + '</span>' +
-                    '<span class="text-white font-bold">' + numberFormat.format(site.views) + '</span>' +
+                return '<li>' +
+                    '<span>' + site.name + '</span>' +
+                    '<span>' + numberFormat.format(site.views) + '</span>' +
                     '</li>';
             }).join('');
             // Inject Homes.com as a permanent row using homesComStats.totalViews
             var homesRowViews = homesViews > 0 ? numberFormat.format(homesViews) : '--';
-            websiteRows += '<li class="flex justify-between items-center text-sm border-t border-slate-700 pt-3 mt-3">' +
-                '<span class="text-emerald-300 font-semibold">Homes.com</span>' +
-                '<span class="text-white font-bold">' + homesRowViews + '</span>' +
+            websiteRows += '<li style="border-top: 2px solid #e2e8f0; padding-top: 0.5rem; margin-top: 0.25rem;">' +
+                '<span style="color:#7c3aed;font-weight:700;">Homes.com</span>' +
+                '<span>' + homesRowViews + '</span>' +
                 '</li>';
             websitesList.innerHTML = websiteRows;
         }
@@ -2489,9 +2516,9 @@ function refreshLiveIntelligence() {
         var citiesList = document.getElementById('live-top-cities');
         if (citiesList && Array.isArray(stats.listTracTopCities)) {
             citiesList.innerHTML = stats.listTracTopCities.map(function(city) {
-                return '<li class="flex justify-between items-center text-sm">' +
-                    '<span class="text-slate-300">' + city.name + '</span>' +
-                    '<span class="text-white font-bold">' + numberFormat.format(city.views) + '</span>' +
+                return '<li>' +
+                    '<span>' + city.name + '</span>' +
+                    '<span>' + numberFormat.format(city.views) + '</span>' +
                     '</li>';
             }).join('');
         }
