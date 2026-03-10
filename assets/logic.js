@@ -2303,7 +2303,7 @@ function getCampaignStatus(startDateStr) {
 
 function generateSocialNarrative(reach, hookRate) {
     if (hookRate === undefined) hookRate = 30;
-    return "Our current data shows a strong engagement core. Upon the Phase 2 pivot to $434,900, we will deploy a $100.00 Meta Acceleration campaign. By leveraging our current 30% Hook Rate and optimized local targeting, this spend is projected to force 15,384 – 16,923 new impressions into the top-funnel within 72 hours of the price change.";
+    return "Our strategy includes a dedicated $100.00 Aggregate Acceleration Fund. Rather than a single spend, we deploy $25.00 at each 30-day pivot to 're-shock' the Meta algorithm. This ensures that as we transition to $434,900, we force your new price position in front of 3,800+ fresh local buyers immediately, totaling over 15,384 impressions across the full liquidity cycle.";
 }
 
 function refreshLiveIntelligence() {
